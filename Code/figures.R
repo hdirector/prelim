@@ -8,7 +8,7 @@ DELTA <- 2
 
 #Convert data from matlab to R
 library("R.matlab")
-drifterbetty2 <- readMat("/users/hdirector/Dropbox/Prelim/ReplicationCode/drifterbetty2.mat")
+drifterbetty2 <- readMat("/users/hdirector/Documents/prelim/prelim/Code/drifterbetty2.mat")
 drift <- list("num" = as.vector(drifterbetty2$drifterbetty[,,1]$num),
               "lat" = as.vector(drifterbetty2$drifterbetty[,,1]$lat),
               "lon" = as.vector(drifterbetty2$drifterbetty[,,1]$lon),
