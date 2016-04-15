@@ -59,10 +59,6 @@ mtext("Replication of Figure 2", outer = T, line = -3)
 #abline(v = f0, col = "red")
 
 ###Figure 3
-rm(list = ls())
-source("/users/hdirector/Dropbox/Prelim/ReplicationCode/functions.R")
-set.seed(103)
-
 ###TO DO: How did they come up with these variance (autocorrelation at 0)?
 
 #sample matern
@@ -90,5 +86,9 @@ plot(DELTA*fbm$omega, fbm$sZ, col = "blue", ylim = c(-20, 80), xlim = c(-pi, pi)
      type = "l", xlab = expression(paste(omega, Delta)), ylab = "dB")
 points(DELTA*mat$omega, mat$sZ, col = "red", type = "l")
 
+
+###Figure 4
+optim(par = c(5, 2, 2, 4, 2, 2), ll, Z = bZ, delta = 2,  method = "L-BFGS-B", control=list(fnscale = -1),
+      lower = c(0, -Inf, 0, 0, 0.5, 0), upper = c(Inf, Inf, Inf, Inf, Inf, Inf))
 
 

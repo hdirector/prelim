@@ -73,16 +73,14 @@ simFBM <- function(B, alpha, H, N) {
 
 #Blurred Whittle likelihood
 ll <- function(theta, Z, delta) {
+  A <- theta[1]; w0 <- theta[2]; c <- theta[3];
+  B <- theta[4]; alpha <- theta[5]; h <- theta[6]
   N <- length(Z)
   tau <-  seq(0, N - 1, 1)
   curr <- getPerio(Z, delta)
-  sTau <- ouAc(A = 5, w0 = 2, c = 3, tau, N) + maternAc(B = 10, alpha = 2, h = 2, N)  
+  sTau <- ouAc(A, w0, c, tau, N) + maternAc(B, alpha, h, N)  
   sBar <- Re(fftshift(2*fft(sTau*(1 - tau/N)) - sTau[1])) 
+  print(-sum(curr$sZ/sBar + log(sBar)))
   return(-sum(curr$sZ/sBar + log(sBar)))
 }
 
-
-#TESTING 
-theta <- c(10, .9, 1, 2, 2, 2)
-Z <- readMat("/users/hdirector/Dropbox/Prelim/ReplicationCode/samp.mat")$X
-  
