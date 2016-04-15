@@ -1,12 +1,20 @@
 #Calculate periodogram
-getPerio <- function(Z, delta, dB = TRUE) {
+getPerio <- function(Z, delta, dB = TRUE, noZero = TRUE) {
   library("waved")
   #fourier frquencies 
   N <- length(Z)
-  if (N%%2 == 1) {
-    omega <- (2*pi/(N*delta))*c(sort(-seq(1, (N - 1)/2, 1)), seq(1, (N - 1)/2, 1))
+  if(noZero == TRUE) {
+    if (N%%2 == 1) {
+      omega <- (2*pi/(N*delta))*c(sort(-seq(1, (N - 1)/2, 1)), seq(1, (N - 1)/2, 1))
+    } else {
+      omega <- (2*pi/(N*delta))*c(sort(-seq(1, N/2, 1)), seq(1, N/2, 1))
+    }
   } else {
-    omega <- (2*pi/(N*delta))*c(sort(-seq(1, N/2, 1)), seq(1, N/2, 1))
+    if (N%%2 == 1) {
+      omega <- (2*pi/(N*delta))*c(sort(-seq(1, (N - 1)/2, 1)), 0,  seq(1, (N - 1)/2, 1))
+    } else {
+      omega <- (2*pi/(N*delta))*c(sort(-seq(1, N/2, 1)), 0, seq(1, N/2, 1))
+    }
   }
   #convert to decibals
   sZ <- (delta/N)*Mod(fft(Z))^2; sZ <- fftshift(sZ)
@@ -70,17 +78,71 @@ simFBM <- function(B, alpha, H, N) {
   return(Z)
 }
 
-
 #Blurred Whittle likelihood
-ll <- function(theta, Z, delta) {
-  A <- theta[1]; w0 <- theta[2]; c <- theta[3];
-  B <- theta[4]; alpha <- theta[5]; h <- theta[6]
+ll <- function(theta, Z, delta, curr) {
+  #theta = (A, B, w0,c, h, alpha) 
+  #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
+  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
+  A <- theta[1]; B <- theta[2]; w0 <- theta[3];
+  c <- theta[4]; h <- theta[5]; alpha <- theta[6]
   N <- length(Z)
   tau <-  seq(0, N - 1, 1)
-  curr <- getPerio(Z, delta)
   sTau <- ouAc(A, w0, c, tau, N) + maternAc(B, alpha, h, N)  
-  sBar <- Re(fftshift(2*fft(sTau*(1 - tau/N)) - sTau[1])) 
+  sBar <- abs(Re(fftshift(2*fft(sTau*(1 - tau/N)) - sTau[1]))) #Fix this, why no negs for sBar?
   print(-sum(curr$sZ/sBar + log(sBar)))
   return(-sum(curr$sZ/sBar + log(sBar)))
+}
+
+
+#for testing
+Z <- bZ
+delta <- 2
+CF = -0.6104
+fracNeg <- .4
+fracPos <- 0
+
+#Function to fit likelihood
+fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
+  curr <- getPerio(Z, delta, dB = FALSE, noZero = FALSE)
+  N <- length(Z)
+  
+  #set window of frequencies to consider in evalution (assuming frequencies sorted min to max)
+  medIndex <- floor(N/2) + 1 #middle value (freq = 0)
+  minIndex <- round((medIndex - 1)*(1 - fracNeg) + 1) #index of minimum frequency considered
+  maxIndex <- round(medIndex + fracPos*(N - medIndex)) #index of maximum frequency considered
+  
+  ####initial parameter estimates (using the well-reasoned parameters suggested in the paper's published code)
+  #theta = (A, B, w0,c, h, alpha) 
+  #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
+  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
+  parInit <- rep(NA, 6) 
+  parInit[3] <- CF #set w0 to coriolis freq
+  parInit[6] <- 1 #set smoothness to 1 (corresponds to f^-2 decay)
+  #TO DO: UNDERSTAND LOGIC OF THESE INITIAL PARAMETERS (claim to be from solving simultaneous eq's of spectral, but not an exact match to what's in paper)
+  
+  #Find initial guess for OU amplitude and dampening, zero in on area around inertial oscillation peak 
+  #Find index of  where frequencies move from inertial freq and turbulent background (as a guess, the author's use half the coriolis freq)
+  divideIndex <- round(medIndex + (0.5*CF/pi)*medIndex)
+  #Find index of max value (other than w = 0), need to search diff direction depending on sign of CF
+  if (CF > 0) {
+    maxIndex <- which.max(curr$sZ[divideIndex:N]) + divideIndex
+  } else {
+    maxIndex <- which.max(curr$sZ[1:divideIndex])
+  }
+  #Consider freq's one either side of peak for ou par (1/3 of the distance, arbitrary choice used by author's just for initial parameters)
+  numTest <- ceiling(abs(medIndex - maxIndex)/3)
+  ioIndex <- c((maxIndex - numTest):(divideIndex -1), (divideIndex + 1):(divideIndex + numTest))
+  parInit[4] <- sqrt(median((curr$sZ[ioIndex]*(delta*curr$omega[ioIndex] - CF)^2)/(curr$sZ[maxIndex] - curr$sZ[ioIndex])))
+  parInit[1] <- sqrt(curr$sZ[maxIndex])*parInit[4]
+  
+  #Find initial guess for Matern amplitude and slope; zero in on area around turbulent background peak
+  turbIndex <- c((medIndex - numTest):(medIndex - 1), (medIndex + 1):(medIndex + numTest))
+  parInit[5] <- sqrt(median((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])))
+  parInit[2] <- sqrt(max(curr$sZ))*parInit[5]
+  
+  #Maximize likelihood numerically
+  test <- optim(parInit, ll, Z = Z[minIndex:maxIndex], delta = delta, curr = curr, control = list(fnscale = -1),
+                method = "L-BFGS-B", lower = c(0, 0, -Inf, 0, 0, 0), upper = rep(Inf, 6))
+  
 }
 
