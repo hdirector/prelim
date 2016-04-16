@@ -1,7 +1,7 @@
 ###Hannah Director###
 #Research paper prelim 
 rm(list = ls())
-source("/users/hdirector/Dropbox/Prelim/ReplicationCode/functions.R")
+source("/users/hdirector/Documents/prelim/prelim/Code/functions.R")
 
 #Constants
 DELTA <- 2
