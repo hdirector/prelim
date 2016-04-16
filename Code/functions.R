@@ -79,12 +79,19 @@ simFBM <- function(B, alpha, H, N) {
 }
 
 #Blurred Whittle likelihood
-ll <- function(theta, Z, delta, curr, firstIndex, lastIndex, medIndex, incZero = FALSE) {
+ll <- function(theta, Z, delta, curr, firstIndex, lastIndex, medIndex, incZero = FALSE, trans = TRUE) {
   #theta = (A, B, w0,c, h, alpha) 
   #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
-  A <- theta[1]; B <- theta[2]; w0 <- theta[3];
-  c <- theta[4]; h <- theta[5]; alpha <- theta[6]
+  if (trans == TRUE) {
+    A <- expm1(theta[1]); B <- expm1(theta[2]); w0 <- theta[3]
+    c <- expm1(theta[4]) + pi*sqrt(3)/N 
+    h <- expm1(theta[5]) + pi*sqrt(3)/N
+    alpha <- expm1(theta[6]) + 0.5
+  } else {
+    A <- theta[1]; B <- theta[2]; w0 <- theta[3];
+    c <- theta[4]; h <- theta[5]; alpha <- theta[6]
+  }
   N <- length(Z)
   tau <-  seq(0, N - 1, 1)
   sTau <- ouAc(A, w0, c, tau, N) + maternAc(B, alpha, h, N)  
@@ -147,16 +154,25 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   parInit[5] <- sqrt(median((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])))
   parInit[2] <- sqrt(max(curr$sZ))*parInit[5]
 
+  #Transform parameters to an unconstrained space for optimization
+  transParInit <- rep(NA, 6)
+  transParInit[1] <- log1p(parInit[1]) #0 < A < inf ===> -inf < log(A) < inf
+  transParInit[2] <- (log1p(parInit[2])) #0 < B < inf ===> -inf < log(B) < inf 
+  transParInit[3] <- parInit[3] #-inf < w0 < inf ===> -inf <- w0 < inf
+  transParInit[4] <- log1p(parInit[4] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
+  transParInit[5] <- log1p(parInit[5] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
+  transParInit[6] <- log1p(parInit[6] - 0.5) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
+  
   #Maximize likelihood numerically
   #theta = (A, B, w0,c, h, alpha) 
   #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
-  test <- optim(truth, ll, Z = Z, delta = delta, curr = curr, 
+  opt <- optim(transParInit, ll, Z = Z, delta = delta, curr = curr, 
                 firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
-                control = list(fnscale = -1), method = "L-BFGS-B", 
-                lower = c(0, 0, -Inf, pi*sqrt(3)/N, pi*sqrt(3)/N, 0.5),
-                upper = c(Inf, Inf, Inf, Inf, Inf, Inf))
-  
+                control = list(fnscale = -1, maxiter = 10000000))
+  fin <-  c(expm1(opt$par[1]), expm1(opt$par[2]), opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N, 
+            expm1(opt$par[5]) + pi*sqrt(3)/N, expm1(opt$par[6]) + 0.5)
+  fin
   #test on truth
   truth <- c(5.3395, 2.4608e11, -0.8130, 0.0527, 1.3696, 68.1713)
   
