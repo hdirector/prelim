@@ -84,10 +84,10 @@ ll <- function(theta, Z, delta, curr, firstIndex, lastIndex, medIndex, incZero =
   #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
   if (trans == TRUE) {
-    A <- expm1(theta[1]); B <- expm1(theta[2]); w0 <- theta[3]
-    c <- expm1(theta[4]) + pi*sqrt(3)/N 
-    h <- expm1(theta[5]) + pi*sqrt(3)/N
-    alpha <- expm1(theta[6]) + 0.5
+    A <- 10^(theta[1]); B <- 10^(theta[2]); w0 <- theta[3]
+    c <- 10^(theta[4]) + pi*sqrt(3)/N 
+    h <- 10^(theta[5]) + pi*sqrt(3)/N
+    alpha <- 10^(theta[6]) + 0.5
   } else {
     A <- theta[1]; B <- theta[2]; w0 <- theta[3];
     c <- theta[4]; h <- theta[5]; alpha <- theta[6]
@@ -98,11 +98,11 @@ ll <- function(theta, Z, delta, curr, firstIndex, lastIndex, medIndex, incZero =
   sBar <- abs(Re(fftshift(2*fft(sTau*(1 - tau/N)) - sTau[1]))) #Interpet this, why no negs for sBar?
   if (incZero == FALSE) {
     useIndex <- c(firstIndex:(medIndex -1))#MIGHT NEED TO FIX THIS LINE
-    llVal <- sum(curr$sZ[useIndex]/sBar[useIndex] + log(sBar[useIndex]))
+    llVal <- -sum(curr$sZ[useIndex]/sBar[useIndex] + log(sBar[useIndex]))
   } else {
-    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex] + log(sBar[firstIndex:lastIndex]))
+    llVal <- -sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex] + log(sBar[firstIndex:lastIndex]))
   }
-  print(log(llVal))
+  print(llVal)
   return(llVal)
 }
 
@@ -156,12 +156,12 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   
   #Transform parameters to an unconstrained space for optimization
   transParInit <- rep(NA, 6)
-  transParInit[1] <- log1p(parInit[1]) #0 < A < inf ===> -inf < log(A) < inf
-  transParInit[2] <- (log1p(parInit[2])) #0 < B < inf ===> -inf < log(B) < inf 
+  transParInit[1] <- log10(parInit[1]) #0 < A < inf ===> -inf < log(A) < inf
+  transParInit[2] <- logb(parInit[2]) #0 < B < inf ===> -inf < log(B) < inf 
   transParInit[3] <- parInit[3] #-inf < w0 < inf ===> -inf <- w0 < inf
-  transParInit[4] <- log1p(parInit[4] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
-  transParInit[5] <- log1p(parInit[5] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
-  transParInit[6] <- log1p(parInit[6] - 0.5) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
+  transParInit[4] <- log10(parInit[4] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
+  transParInit[5] <- log10(parInit[5] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
+  transParInit[6] <- log10(parInit[6] - 0.5) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
   
   #Maximize likelihood numerically
   #theta = (A, B, w0,c, h, alpha) 
@@ -169,9 +169,9 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
   opt <- optim(transParInit, ll, Z = Z, delta = delta, curr = curr, 
                firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
-               control = list(maxiter = 10000000, reltol = 1e-20))
-  fin <-  c(expm1(opt$par[1]), expm1(opt$par[2]), opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N, 
-            expm1(opt$par[5]) + pi*sqrt(3)/N, expm1(opt$par[6]) + 0.5)
+               control = list(fnscale = -1, maxit = 1000000, reltol=1e-1000))
+  fin <-  c(10^(opt$par[1]), 10^(opt$par[2]), opt$par[3], 10^(opt$par[4]) + pi*sqrt(3)/N, 
+            10^(opt$par[5]) + pi*sqrt(3)/N, 10^(opt$par[6]) + 0.5)
   fin
   #test on truth
   truth <- c(5.3395, 2.4608e11, -0.8130, 0.0527, 1.3696, 68.1713)
