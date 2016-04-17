@@ -157,7 +157,7 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   #Transform parameters to an unconstrained space for optimization
   transParInit <- rep(NA, 6)
   transParInit[1] <- log10(parInit[1]) #0 < A < inf ===> -inf < log(A) < inf
-  transParInit[2] <- logb(parInit[2]) #0 < B < inf ===> -inf < log(B) < inf 
+  transParInit[2] <- log10(parInit[2]) #0 < B < inf ===> -inf < log(B) < inf 
   transParInit[3] <- parInit[3] #-inf < w0 < inf ===> -inf <- w0 < inf
   transParInit[4] <- log10(parInit[4] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
   transParInit[5] <- log10(parInit[5] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
