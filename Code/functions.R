@@ -25,30 +25,30 @@ getPerio <- function(Z, delta, dB = TRUE, noZero = TRUE) {
 }
 
 #Function to get autocorrelation for the matern
-maternAc <- function(B, alpha, h, N) {
+maternAc <- function(B, alpha, h, N, delta) {
   ac <- rep(NA, N)
   ac[1] <- ((B^2)*beta(0.5, alpha - 0.5))/(2*pi*abs(h)^(2*alpha  - 1)) #variance (cov at lag 0) 
   tau <- 1:(N - 1) #lags 
-  ac[2:N] <- ((B^2*(h*abs(tau))^(alpha - 0.5)*besselK(h*abs(tau), alpha - 0.5))/
-                (2^(alpha - 1/2)*pi^(1/2)*gamma(alpha)*h^(2*alpha  - 1)))
+  ac[2:N] <- ((B^2*(abs(h)*delta*tau)^(alpha - 0.5)*besselK(abs(h)*delta*tau, alpha - 0.5))/
+                (2^(alpha - 1/2)*pi^(1/2)*exp(lgamma(alpha))*abs(h)^(2*alpha  - 1))) 
   return(ac)
 }
 
 #Function to get autocorrelation for the OU process 
-#(TO DO: DETERMINE IF TYPO IS IN THERE CODE OR PAPER 
+#(TO DO: DETERMINE IF TYPO IS IN THEIR CODE OR PAPER 
 #(should there be a delta in this function)
-ouAc <- function(A, w0, c, tau, N) {
+ouAc <- function(A, w0, C, N, delta) {
   ac <- rep(NA, N)
   tau <- 0:(N - 1) #lags 
-  ac <- (0i + A^2/abs(2*c))*exp(1i*w0*tau)*exp(0i + -c*abs(tau))
+  ac <- (0i + A^2/abs(2*C))*exp(1i*w0*delta*tau)*exp(0i + -abs(C)*delta*tau)
   return(ac)
 }
 
 #Function to simulate a time series with complex Matern covariance
-simMatern <- function(B, alpha, h, N) {
+simMatern <- function(B, alpha, h, N, delta) {
   
   #calculate autocorrelation
-  ac <- maternAc(B, alpha, h, N)
+  ac <- maternAc(B, alpha, h, N, delta)
   
   #Create covariance and generate realizations using standard gaussian tricks
   library(mvtnorm)
@@ -84,35 +84,32 @@ ll <- function(theta, Z, delta, curr, firstIndex, lastIndex, medIndex, incZero =
   #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
   if (trans == TRUE) {
-    A <- 10^(theta[1]); B <- 10^(theta[2]); w0 <- theta[3]
-    c <- 10^(theta[4]) + pi*sqrt(3)/N 
-    h <- 10^(theta[5]) + pi*sqrt(3)/N
-    alpha <- 10^(theta[6]) + 0.5
+    A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1; w0 <- theta[3]
+    C <- expm1(theta[4]) + pi*sqrt(3)/N  + 1
+    h <- expm1(theta[5]) + pi*sqrt(3)/N + 1
+    alpha <- expm1(theta[6]) + 0.5 + 1
   } else {
     A <- theta[1]; B <- theta[2]; w0 <- theta[3];
-    c <- theta[4]; h <- theta[5]; alpha <- theta[6]
+    C <- theta[4]; h <- theta[5]; alpha <- theta[6]
+  }
+  
+  #value is too high and will crash
+  if (alpha > 171) {
+    print("alpha")
   }
   N <- length(Z)
   tau <-  seq(0, N - 1, 1)
-  sTau <- ouAc(A, w0, c, tau, N) + maternAc(B, alpha, h, N)  
-  sBar <- abs(Re(fftshift(2*fft(sTau*(1 - tau/N)) - sTau[1]))) #Interpet this, why no negs for sBar?
+  sTau <- ouAc(A, w0, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
+  sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) #Interpet this, why no negs for sBar?
   if (incZero == FALSE) {
-    useIndex <- c(firstIndex:(medIndex -1))#MIGHT NEED TO FIX THIS LINE
-    llVal <- -sum(curr$sZ[useIndex]/sBar[useIndex] + log(sBar[useIndex]))
+    useIndex <- c(firstIndex:(medIndex - 1)) #check this line
+    llVal <- sum(curr$sZ[useIndex]/sBar[useIndex] + log(sBar[useIndex]))
   } else {
-    llVal <- -sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex] + log(sBar[firstIndex:lastIndex]))
+    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex] + log(sBar[firstIndex:lastIndex]))
   }
   print(llVal)
-  return(llVal)
+  return(100*log(llVal))
 }
-
-
-#for testing
-Z <- bZ
-delta <- 2
-CF = -0.6104
-fracNeg <- .4
-fracPos <- 0
 
 #Function to fit likelihood
 fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
@@ -153,15 +150,16 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   turbIndex <- c((medIndex - numTest):(medIndex - 1), (medIndex + 1):(medIndex + numTest))
   parInit[5] <- sqrt(median((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])))
   parInit[2] <- sqrt(max(curr$sZ))*parInit[5]
+
   
   #Transform parameters to an unconstrained space for optimization
   transParInit <- rep(NA, 6)
-  transParInit[1] <- log10(parInit[1]) #0 < A < inf ===> -inf < log(A) < inf
-  transParInit[2] <- log10(parInit[2]) #0 < B < inf ===> -inf < log(B) < inf 
+  transParInit[1] <- log1p(parInit[1] - 1) #0 < A < inf ===> -inf < log(A) < inf
+  transParInit[2] <- log1p(parInit[2] - 1) #0 < B < inf ===> -inf < log(B) < inf 
   transParInit[3] <- parInit[3] #-inf < w0 < inf ===> -inf <- w0 < inf
-  transParInit[4] <- log10(parInit[4] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
-  transParInit[5] <- log10(parInit[5] - pi*sqrt(3)/N) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
-  transParInit[6] <- log10(parInit[6] - 0.5) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
+  transParInit[4] <- log1p(parInit[4] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
+  transParInit[5] <- log1p(parInit[5] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
+  transParInit[6] <- log1p(parInit[6] - 0.5 - 1) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
   
   #Maximize likelihood numerically
   #theta = (A, B, w0,c, h, alpha) 
@@ -169,11 +167,13 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
   opt <- optim(transParInit, ll, Z = Z, delta = delta, curr = curr, 
                firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
-               control = list(fnscale = -1, maxit = 1000000, reltol=1e-1000))
-  fin <-  c(10^(opt$par[1]), 10^(opt$par[2]), opt$par[3], 10^(opt$par[4]) + pi*sqrt(3)/N, 
-            10^(opt$par[5]) + pi*sqrt(3)/N, 10^(opt$par[6]) + 0.5)
-  fin
-  #test on truth
-  truth <- c(5.3395, 2.4608e11, -0.8130, 0.0527, 1.3696, 68.1713)
+               control = list(maxit = 1000000000, reltol=1e-1000))
   
+  fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1 , opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N + 1, 
+            expm1(opt$par[5]) + pi*sqrt(3)/N + 1, expm1(opt$par[6]) + 0.5 + 1)
+  #fin <- truth
+  return(list("A" = fin[1], "B" = fin[2], "w0" = fin[3],
+              "C" = fin[4], "h" = fin[5], "alpha" = fin[6],
+              "firstIndex" = firstIndex, "lastIndex" = lastIndex))
+
 }
