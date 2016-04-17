@@ -64,7 +64,7 @@ mtext("Replication of Figure 2", outer = T, line = -3)
 #sample matern
 N <- 1000
 DELTA <- 2
-matSamp <- simMatern(B = 10, alpha  = 0.9, h = 0.1, N = N)
+matSamp <- simMatern(B = 10, alpha  = 0.9, h = 0.1, N = N, delta = DELTA)
 mat <- getPerio(Z = matSamp, delta = DELTA)
 
 #sample FBM
@@ -86,9 +86,39 @@ plot(DELTA*fbm$omega, fbm$sZ, col = "blue", ylim = c(-20, 80), xlim = c(-pi, pi)
      type = "l", xlab = expression(paste(omega, Delta)), ylab = "dB")
 points(DELTA*mat$omega, mat$sZ, col = "red", type = "l")
 
-
 ###Figure 4
-optim(par = c(5, 2, 2, 4, 2, 2), ll, Z = bZ, delta = 2,  method = "L-BFGS-B", control=list(fnscale = -1),
-      lower = c(0, -Inf, 0, 0, 0.5, 0), upper = c(Inf, Inf, Inf, Inf, Inf, Inf))
+CF <- mean(-4*pi*(drift$f[2971:3570]))
+#Fit and plot blue time series
+bFit <- fitModel(bZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0)
+par(mfrow = c(1,2))
+plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
+     ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
+sTau <- ouAc(bFit$A, bFit$w0, bFit$C, N, delta = 1) + maternAc(bFit$B, bFit$alpha, bFit$h, N, delta = 1)  
+tau <- seq(0, N - 1)
+sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+points(DELTA*blue$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
+points(DELTA*blue$omega[bFit$firstIndex:bFit$lastIndex], 10*log10(sBar)[bFit$firstIndex:bFit$lastIndex], 
+       col = "green", type = "l", lwd = 3)
+abline(v = CF, lwd = 3) #inertial frequency
+abline(v = bFit$w0, lwd = 3, lty = 3) #estimated w0
+abline(v = CF - bFit$w0, lwd = 3, lty = 3) #shifted inertial freq (f = f0 - w_eddy)
+
+#Fit and plot green time series
+#abline(v = f0, col = "red")
+gFit <- fitModel(gZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0)
+plot(DELTA*green$omega, green$sZ, type = "l", col = "green", xlab = expression(paste(omega, Delta)),
+     ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
+sTau <- ouAc(gFit$A, gFit$w0, gFit$C, N, delta = 1) + maternAc(gFit$B, gFit$alpha, gFit$h, N, delta = 1)  
+tau <- seq(0, N - 1)
+sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+points(DELTA*green$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
+points(DELTA*blue$omega[bFit$firstIndex:bFit$lastIndex], 10*log10(sBar)[bFit$firstIndex:bFit$lastIndex], 
+       col = "blue", type = "l", lwd = 3)
+abline(v = CF, lwd = 3) #inertial frequency
+
+###Figure 5
+newinertial <- readMat("/users/hdirector/Documents/prelim/prelim/Code/newInertial.mat")
+num = newinertial$newinertial[,,1]$drifters
+
 
 
