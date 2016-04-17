@@ -98,11 +98,11 @@ ll <- function(theta, Z, delta, curr, firstIndex, lastIndex, medIndex, incZero =
   sBar <- abs(Re(fftshift(2*fft(sTau*(1 - tau/N)) - sTau[1]))) #Interpet this, why no negs for sBar?
   if (incZero == FALSE) {
     useIndex <- c(firstIndex:(medIndex -1))#MIGHT NEED TO FIX THIS LINE
-    llVal <- -sum(curr$sZ[useIndex]/sBar[useIndex] + log(sBar[useIndex]))
+    llVal <- sum(curr$sZ[useIndex]/sBar[useIndex] + log(sBar[useIndex]))
   } else {
-    llVal <- -sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex] + log(sBar[firstIndex:lastIndex]))
+    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex] + log(sBar[firstIndex:lastIndex]))
   }
-  print(llVal)
+  print(log(llVal))
   return(llVal)
 }
 
@@ -153,7 +153,7 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   turbIndex <- c((medIndex - numTest):(medIndex - 1), (medIndex + 1):(medIndex + numTest))
   parInit[5] <- sqrt(median((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])))
   parInit[2] <- sqrt(max(curr$sZ))*parInit[5]
-
+  
   #Transform parameters to an unconstrained space for optimization
   transParInit <- rep(NA, 6)
   transParInit[1] <- log1p(parInit[1]) #0 < A < inf ===> -inf < log(A) < inf
@@ -168,8 +168,8 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
   opt <- optim(transParInit, ll, Z = Z, delta = delta, curr = curr, 
-                firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
-                control = list(fnscale = -1, maxiter = 10000000))
+               firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
+               control = list(maxiter = 10000000, reltol = 1e-20))
   fin <-  c(expm1(opt$par[1]), expm1(opt$par[2]), opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N, 
             expm1(opt$par[5]) + pi*sqrt(3)/N, expm1(opt$par[6]) + 0.5)
   fin
@@ -177,4 +177,3 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   truth <- c(5.3395, 2.4608e11, -0.8130, 0.0527, 1.3696, 68.1713)
   
 }
-
