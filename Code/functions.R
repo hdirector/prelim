@@ -150,7 +150,6 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos) {
   turbIndex <- c((medIndex - numTest):(medIndex - 1), (medIndex + 1):(medIndex + numTest))
   parInit[5] <- sqrt(median((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])))
   parInit[2] <- sqrt(max(curr$sZ))*parInit[5]
-
   
   #Transform parameters to an unconstrained space for optimization
   transParInit <- rep(NA, 6)

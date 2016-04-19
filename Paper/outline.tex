@@ -1,0 +1,122 @@
+
+\documentclass{stat572Style}
+
+%%\setlength{\oddsidemargin}{0.25in}
+%%\setlength{\textwidth}{6in}
+%%\setlength{\topmargin}{0.5in}
+%%\setlength{\textheight}{9in}
+
+\renewcommand{\baselinestretch}{1.5} 
+
+
+\bibliographystyle{plainnat}
+
+\begin{document}
+%%\maketitle
+
+\begin{center}
+  {\LARGE A Review of Lagrangian Time Series Models for Ocean Surface Drifter Trajectories (Sykulski et al. (2016)}\\\ \\
+  {Hannah Director \\ 
+    Department of Statistics, University of Washington Seattle, WA, 98195, USA
+  }
+\end{center}
+
+
+
+\begin{abstract}
+  Put your project summary here.
+\end{abstract}
+
+\section{Introduction}
+	\subsection{Application}
+		\subsection{Data Description}
+			Figure 1 included here 
+		\subsection{Oceanography background}
+			\begin{itemize}
+				\item inertial oscillations
+				\item turbulent background
+			\end{itemize}
+			
+
+	\subsection{Spectral analyses of time series}
+			\begin{itemize}
+				\item  wave equations
+				\item Euler's formula
+				\item Fourier transformation
+				\item periodogram
+				\item relationship between autocovariance and power spectral density
+				\item complex-valued velocities
+				\item include Figure 2
+			\end{itemize}
+
+\section{Methods}
+
+	\subsection{Model}
+		\subsubsection{Inertial oscillations}
+			\begin{itemize}
+				\item Ornstein-Uhlenbeck process 
+				\item frequency as a free parameter
+				\item include figure 3 
+			\end{itemize}
+		
+		\subsubsection{Turbulent background}
+				\begin{itemize}
+					\item Mat\'{e}rn model 
+					\item comparison to other integer order processes (e.g. fractional brownian motion)
+				\end{itemize}
+		
+		\subsubsection{Aggregate model}
+			State that you can add two component models together
+	
+	\subsection{Model fitting}
+		\subsubsection{Whittle likelihood}
+			\begin{itemize}
+				\item explanation of original Whittle likelihood and its problems (aliasing, leakage)
+				\item description of tapering `solution' to Whittle and discussion of its imperfections
+				\item blurred whittle likelihood 
+				\item allows for uncertainty estimates via asymptotics (Fisher information)
+			\end{itemize}
+	
+		\subsubsection{Model misspecification}
+			\begin{itemize}
+				\item semi-parametric approach in both time and frequency
+			\end{itemize}
+		\subsubsection{Time-varying parameters for non-stationarity}
+		
+		\subsubsection{Model selection/likelihood ratio tests}
+	
+
+
+
+\section{Results}
+
+	\subsection{Simulated results}
+		Include Figure 5
+		
+	\subsection{Real drifter data (with time-varying parameters)}
+		Include Figures 6-10
+
+\section{Discussion}
+	\begin{itemize}
+		\item powerful technique overall
+		\item more work needed on selecting windows
+	\end{itemize}
+
+\section{Appendix}
+
+\subsection{Errata}
+	\begin{itemize}
+		\item Typo in equation 13
+	\end{itemize}
+
+\subsection{Optimization technique}
+	\begin{itemize}
+		\item My approach transforming parameters to an unconstrained space gives slightly better (higher maximum likelihood) estimates than their use of Matlab's built-in box constraint approach
+			\end{itemize}
+
+
+\bibliography{stat572}
+
+
+\end{document}
+
