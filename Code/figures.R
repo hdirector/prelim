@@ -88,11 +88,13 @@ points(DELTA*mat$omega, mat$sZ, col = "red", type = "l")
 
 ###Figure 4
 CF <- mean(-4*pi*(drift$f[2971:3570]))
+N <- length(bZ)
 #Fit and plot blue time series
 bFit <- fitModel(bZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0)
 par(mfrow = c(1,2))
 plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
+mtext("Replication of Figure 4", outer = T, line = -3)
 sTau <- ouAc(bFit$A, bFit$w0, bFit$C, N, delta = 1) + maternAc(bFit$B, bFit$alpha, bFit$h, N, delta = 1)  
 tau <- seq(0, N - 1)
 sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
@@ -118,7 +120,53 @@ abline(v = CF, lwd = 3) #inertial frequency
 
 ###Figure 5
 newinertial <- readMat("/users/hdirector/Documents/prelim/prelim/Code/newInertial.mat")
+DELTA <- 1
 num = newinertial$newinertial[,,1]$drifters
+vel <- num[[6]] + 1i*num[[7]] #complex velocities, measured in cm/s
+vel1 <- vel[,1]
 
+#inertial frequency
+lat <- num[[10]] #latitudes
+psi <- mean(lat[,1])*pi/180 #average lat in radians
+f0  <- (8*pi/23.9345)*sin(psi) #still need to figure out where these
+                          #constant come from (physics, units issue)
 
+#left figure (first of 200 simulated drifters)
+sim1Fit <- fitModel(vel1, f0, DELTA, 1.5*f0/pi, 1.5*f0/pi) #periodogram
+sim1Per <- getPerio(vel1, delta = DELTA, dB = TRUE, noZero = FALSE) #fit model
+N <- length(vel1)
+par(mfrow = c(1, 2))
+plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "blue",
+     ylim = c(-40, 60), xlim = c(-pi, pi), ylab = "dB",
+     xlab = expression(paste(omega, Delta)))
+mtext("Replication of Figure 5", outer = T, line = -3)
 
+#check how indexing is handled, clearly it's fitting wrong part
+sTau <- ouAc(sim1Fit$A, sim1Fit$w0, sim1Fit$C, N, delta = 1) + maternAc(sim1Fit$B, sim1Fit$alpha, sim1Fit$h, N, delta = 1)  
+tau <- seq(0, N - 1)
+sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+points(DELTA*sim1Per$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
+points(DELTA*sim1Per$omega[sim1Fit$firstIndex:sim1Fit$lastIndex], 10*log10(sBar)[sim1Fit$firstIndex:sim1Fit$lastIndex], 
+       col = "green", type = "l", lwd = 3)
+abline(v = CF, lwd = 3) #inertial frequency
+
+#right figure
+nSim <- dim(sim)[2]
+ensemOmega <- matrix(nrow = N, ncol = nSim)
+ensemSz <- matrix(nrow = N, ncol = nSim)
+for (i in 1:nSim) {
+  temp <- getPerio(vel[,i], delta = DELTA, dB = TRUE, noZero = FALSE) #fit mode
+  ensemOmega[,i] <- temp$omega
+  ensemSz[,i] <- temp$sZ
+}
+
+#ensemble mean periodogram
+meanEnsemSz <- apply(ensemSz, 1, mean)
+
+plot(ensemOmega[,1], ensemSz[,1], type = "l", ylab = "dB",
+          xlab = expression(paste(omega, Delta)), ylim = c(-40, 60),
+          xlim = c(-pi, pi), col = "gray")
+for (i in 2:nSim) {
+  points(ensemOmega[,1], ensemSz[,i], col = "grey", type = "l")
+}
+points(ensemOmega[,1], meanEnsemSz, col = "blue", type = "l")
