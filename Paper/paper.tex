@@ -1,13 +1,13 @@
 
 \documentclass{stat572Style}
-
+\usepackage{natbib}
+\usepackage{amssymb}
 %%\setlength{\oddsidemargin}{0.25in}
 %%\setlength{\textwidth}{6in}
 %%\setlength{\topmargin}{0.5in}
 %%\setlength{\textheight}{9in}
 
 \renewcommand{\baselinestretch}{1.5} 
-
 
 \bibliographystyle{plainnat}
 
@@ -39,15 +39,43 @@
 			
 
 	\subsection{Spectral analyses of time series}
-			\begin{itemize}
-				\item  wave equations
-				\item Euler's formula
-				\item Fourier transformation
-				\item periodogram
-				\item relationship between autocovariance and power spectral density
-				\item complex-valued velocities
-				\item include Figure 2
-			\end{itemize}
+	TO DO: vary who I cite here, unify notation across sources\\
+	\indent \citet{Sykulski2016} exclusively employs spectral analysis to model the  drifters.  To provide context for the  methods they propose, this section summarize the main concepts of this time series analysis method. More thorough coverage of this material can be found in  \citep{Percival1993}, for example. From a statistical perspective, a time series, $X_{t} = X(t\Delta)$, where $\Delta > 0 $ is the sampling interval and $t = \{1,2,...,n\}$,  can be understood as a realization of a stochastic process over time. Spectral analysis models time series, not in their original time domain, but instead in a frequency domain. This is possible because time series can be represented as infinite sums of exponential functions, known as a spectral representation. Following the presentation of \citet{Percival1993}, the idea of spectral representation can be understood by initially considering the harmonic process,
+    	\begin{equation}
+		\label{eq: harmonic}
+		X_{t} = \sum_{l=1}^{L}D_{l} cos(2\pi f_{l}t + \phi_{l}),  t = 0, \pm 1, \pm 2...,
+	\end{equation}
+where $L$ and  $D_{l}$, and $f_{l}$ are real-valued constants, $\phi_{l}$ are independent Uniform($-\pi, \pi$) random variables, and the frequencies, $0 <f_{l} < 1/2$, are taken to be increasing order. As the number of  sinusoidal functions increases,  more complex behavior can be represented by the sum in Equation ~\ref{eq: harmonic}.  Applying Euler's formula,  Equation \ref{eq: harmonic}, can be written as 
+	\begin{equation}
+		\label{eq: harmonicSpec}
+		X_{t} = \sum_{l = -L}^{L} C_{l}e^{i2\pi f_{l} t}.
+	\end{equation}
+	
+\noindent which as $L \rightarrow \infty$  gives
+	\begin{equation}
+		\label{eq: specRep}
+		X_{t} = \int_{-1/2}^{1/2} e^{i2\pi ft}dZ(f),
+	\end{equation}
+
+\noindent Equation \ref{eq: specRep} can be used to define any real or complex-valued discrete parameter stationary process, $X_{t}$, with mean zero. Specifically, there exists a process $\{Z(f)\}$ on $[-1/2, 1/2]$,  where the intervals $dZ(f)$ and $dZ(f')$  are uncorrelated for all $f,f'$, that satisfies Equation \ref{eq: specRep} for all $t$\citep{Percival1993}. This result is known as the spectral representation theorem for discrete parameter stationary processes. An analogous result holds for continuous parameter stationary processes \citep{Percival1993}. 
+
+The relationship between spectral densities and autocovariances also contributes to the utility of analysis in this domain. In particular, the spectral densities of a time series and the autocovariance sequence are the Fourier transform of one another.  In this paper, the focus is on second order stationary processes,  or cases where the autocovariance, $s_{xx}$, is only a function of the distance between the increments,  meaning $c_{xx}(t_{1}, t_{2}) = \mathbb{E}(X_{t1}X_{t2}) = s_{xx}(|t_{1} - t_{2}|)$.  (add derivation here?) In such cases, this relationship is written as 
+	\begin{equation}
+	S_{xx}(\omega) = \Delta \sum_{\tau = -\infty}^{\infty} s_{xx}(\tau)e^{i\omega \tau \Delta} 
+	\end{equation}
+and 
+	\begin{equation}
+		s_{xx}(\tau) = \frac{1}{2\pi} \int_{-\pi / \Delta}^{\pi / \Delta}S_{xx}(\omega)e^{i \omega \Delta}d \omega.
+	\end{equation}
+\noindent where $\omega \in [-\pi/\Delta, \pi/ \Delta]$ is the angular frequency measured in radians \citep{Sykulski2013}
+.  In the complex-valued case, $s_{xx}$ and $S_{xx}$ are replaced with $s_{xy}$ and $S_{xy}$ to represent the cross-covariance terms \citep{Sykulski2013}. 
+
+Given an observed time series $X_{t}$, $t = 1,2,..,N$, the common estimator for the spectra is the periodogram, $\hat{S}_{xx}(\omega) = |J_{x}(\omega)|^{2}$ where 
+\begin{equation}
+J_{x}(\omega) = \sqrt{\frac{\Delta}{N}} \sum_{t=1}^{N} X_{t}e^{-i \omega t \Delta}. 
+\end{equation}
+Although simple, this estimator has two known issues: aliasing and leakage.  Aliasing is ... Leakage is... Tapering has been proposed to fix, but has problems.. 
+
 
 \section{Methods}
 
@@ -70,6 +98,7 @@
 	
 	\subsection{Model fitting}
 		\subsubsection{Whittle likelihood}
+				
 			\begin{itemize}
 				\item explanation of original Whittle likelihood and its problems (aliasing, leakage)
 				\item description of tapering `solution' to Whittle and discussion of its imperfections
@@ -115,7 +144,7 @@
 			\end{itemize}
 
 
-\bibliography{stat572}
+\bibliography{prelim}
 
 
 \end{document}
