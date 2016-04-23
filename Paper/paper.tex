@@ -2,6 +2,7 @@
 \documentclass{stat572Style}
 \usepackage{natbib}
 \usepackage{amssymb}
+\usepackage{amsmath}
 %%\setlength{\oddsidemargin}{0.25in}
 %%\setlength{\textwidth}{6in}
 %%\setlength{\topmargin}{0.5in}
@@ -31,11 +32,7 @@
 	\subsection{Application}
 		\subsection{Data Description}
 			Figure 1 included here 
-		\subsection{Oceanography background}
-			\begin{itemize}
-				\item inertial oscillations
-				\item turbulent background
-			\end{itemize}
+	
 			
 
 	\subsection{Spectral analyses of time series}
@@ -79,14 +76,31 @@ Although simple, this estimator has two known issues: aliasing and leakage.  Ali
 
 \section{Methods}
 
-	\subsection{Model}
-		\subsubsection{Inertial oscillations}
-			\begin{itemize}
-				\item Ornstein-Uhlenbeck process 
-				\item frequency as a free parameter
-				\item include figure 3 
-			\end{itemize}
-		
+\subsection{Model}
+\subsubsection{Inertial oscillations}
+
+Inertial oscillations are often modeled with the following set of deterministic differential equations (read and add physics citations)
+\begin{align}
+\frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu \\ \nonumber
+\frac{\partial v}{\partial t} - f_{0}u &= G - cv
+\end{align}
+where $u$ and $v$ represent the vertical and horizontal velocity, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind. \citet{Sykulski2016} propose instead using a a complex-valued representation of the velocity, $z(t) = u(t) + i v(t)$,  from which we obtain 
+\begin{align*}
+\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}\\
+dz &= (F - c u- f_{0}v)dt + (iG - icv + if_{0}u)dt\\
+&= fo(-v + iu)dt - c(u + iv)dt + (F + iG)dt\\
+&= if_{0}(u + iv) - c(u + iv) + (F + iG)\\
+dz(t) &= (if_{0} - c)z dt + (F + iG)dt. 
+\end{align*}
+We further replace the wind forcing term, $(F + iG)dt$, with complex-valued Brownian increments, which is justified by blah (look up and cite the Mandelrot and Van Ness justification). Thus, we have a stochastic model which retains the desired relationship between the horizontal and vertical velocity components. \citet{Sykulski2016} further let $f_{0}$ be a free parameter, $\omega_{0}$, giving the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation.
+\begin{equation}
+dz(t) = (i \omega -c) z(t) dt + A d Q(t), 
+\end{equation}
+Letting $\omega_{0}$ be estimated by data, rather than fixed at the inertial frequency allows for identification and estimation of the shifts in the angular frequency due to eddies. If the observed angular frequency differs from the inertial frequency, the angular frequency of the eddy can be calculated as $\omega_{eddy} = f_{0} - \omega_{0}$, since $\omega_{0}$ is a sum of the inertial and eddy frequencies.
+
+The complex OU process has 
+
+
 		\subsubsection{Turbulent background}
 				\begin{itemize}
 					\item Mat\'{e}rn model 
