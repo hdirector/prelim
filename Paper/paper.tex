@@ -16,7 +16,7 @@
 %%\maketitle
 
 \begin{center}
-  {\LARGE A Review of Lagrangian Time Series Models for Ocean Surface Drifter Trajectories (Sykulski et al. (2016)}\\\ \\
+  {\LARGE A Review of Lagrangian Time Series Models for Ocean Surface Drifter Trajectories (Sykulski et al. (2016))}\\\ \\
   {Hannah Director \\ 
     Department of Statistics, University of Washington Seattle, WA, 98195, USA
   }
@@ -24,138 +24,66 @@
 
 
 
-\begin{abstract}
-  Put your project summary here.
-\end{abstract}
+%\begin{abstract}
+%  Put your project summary here.
+%\end{abstract}
 
 \section{Introduction}
-	\subsection{Application}
-		\subsection{Data Description}
-			Figure 1 included here 
-	
+\indent ``Lagrangian Time Series Models for Ocean Surface Drifter Trajectories," by Adam M. Sykulski, Sofia C. Olhede, Jonathan M. Lilly, and Eric Danioux presents a multi-component spectral model for analysis of data transmitted by ocean surface drifters. Drifters are free-floating  instruments that transmit their location at regular time intervals,  creating a \textbf{\it{Langrangian time series}}, or a sequence of spatial locations over time. Oceanographers use these time series to increase understanding of  ocean circulation patterns. Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical Society Series C}}, this paper develops a model that can isolate a scientific quantity of interest,  and, in so doing, introduces several new statistical techniques.\\
+\indent The motion of parcels of water moving over changing latitudes is known to have a rotational component. Because the Earth has  different diameter at different latitudes, the speed of objects moving with Earth's rotation varies across latitudes.  This induces a phenomena known as the Coriolis Effect, whereby very fast moving objects or objects being observed over long periods, such as drifters, end up moving at speeds that are different than the Earth beneath them as they change latitude. Viewed from a stationary reference frame, this creates circular motions, or inertial oscillations. These motions have known frequencies, referred to as inertial frequencies. Oceanographers  are interested in detecting deviations from these frequencies, as they are thought to indicate eddies, or persistent circular wave patterns \citep{Kunze1985}. However, the ocean has a constant turbulent background flow which makes identifying eddies in real data difficult \citep{ Elipot2010}. The methods in this paper overcome this challenge and successfully find shifts in the inertial frequency with a spectral time series model. \\
+\indent In achieving this result, several statistical advances are made.  The authors introduce an additive spectral domain model that has components corresponding to both the turbulent background and the inertial oscillations. For the turbulent background model, the Mat\'{e}rn covariance commonly used in spatial statistics \citep{Gneiting2012} is extended to the time-series context. This allows for a more flexible model for background behavior than previously obtained.  Inertial oscillations are modeled with a complex Ornstein-Uhlenbeck (OU) \citep{Arato1962, Jeffreys1968}, which provides a stochastic equivalent to an accepted set of coupled differential equations describing inertial oscillations. Further statistical innovation is employed in fitting the model with a variation on standard Whittle likelihood to reduce bias and in allowing for non-stationarity through time-varying parameter estimates. \\
+\indent The remainder of this review proceeds as follows. After a succint review of spectral analysis, Section 2 discusses the model for the drifters and the methods used to fit it. Section 3 presents the paper's results including analysis of a long time series with time-varying parameters and an application from a simulated model. The paper concludes with a discussion of the value and limitations of the approach taken by \citet{Sykulski2016}. 
+\section{Methods}
 			
 
-	\subsection{Spectral analyses of time series}
-	TO DO: vary who I cite here, unify notation across sources\\
-	\indent \citet{Sykulski2016} exclusively employs spectral analysis to model the  drifters.  To provide context for the  methods they propose, this section summarize the main concepts of this time series analysis method. More thorough coverage of this material can be found in  \citep{Percival1993}, for example. From a statistical perspective, a time series, $X_{t} = X(t\Delta)$, where $\Delta > 0 $ is the sampling interval and $t = \{1,2,...,n\}$,  can be understood as a realization of a stochastic process over time. Spectral analysis models time series, not in their original time domain, but instead in a frequency domain. This is possible because time series can be represented as infinite sums of exponential functions, known as a spectral representation. Following the presentation of \citet{Percival1993}, the idea of spectral representation can be understood by initially considering the harmonic process,
-    	\begin{equation}
-		\label{eq: harmonic}
-		X_{t} = \sum_{l=1}^{L}D_{l} cos(2\pi f_{l}t + \phi_{l}),  t = 0, \pm 1, \pm 2...,
-	\end{equation}
-where $L$ and  $D_{l}$, and $f_{l}$ are real-valued constants, $\phi_{l}$ are independent Uniform($-\pi, \pi$) random variables, and the frequencies, $0 <f_{l} < 1/2$, are taken to be increasing order. As the number of  sinusoidal functions increases,  more complex behavior can be represented by the sum in Equation ~\ref{eq: harmonic}.  Applying Euler's formula,  Equation \ref{eq: harmonic}, can be written as 
-	\begin{equation}
-		\label{eq: harmonicSpec}
-		X_{t} = \sum_{l = -L}^{L} C_{l}e^{i2\pi f_{l} t}.
-	\end{equation}
-	
-\noindent which as $L \rightarrow \infty$  gives
-	\begin{equation}
-		\label{eq: specRep}
-		X_{t} = \int_{-1/2}^{1/2} e^{i2\pi ft}dZ(f),
-	\end{equation}
-
-\noindent Equation \ref{eq: specRep} can be used to define any real or complex-valued discrete parameter stationary process, $X_{t}$, with mean zero. Specifically, there exists a process $\{Z(f)\}$ on $[-1/2, 1/2]$,  where the intervals $dZ(f)$ and $dZ(f')$  are uncorrelated for all $f,f'$, that satisfies Equation \ref{eq: specRep} for all $t$\citep{Percival1993}. This result is known as the spectral representation theorem for discrete parameter stationary processes. An analogous result holds for continuous parameter stationary processes \citep{Percival1993}. 
-
-The relationship between spectral densities and autocovariances also contributes to the utility of analysis in this domain. In particular, the spectral densities of a time series and the autocovariance sequence are the Fourier transform of one another.  In this paper, the focus is on second order stationary processes,  or cases where the autocovariance, $s_{xx}$, is only a function of the distance between the increments,  meaning $c_{xx}(t_{1}, t_{2}) = \mathbb{E}(X_{t1}X_{t2}) = s_{xx}(|t_{1} - t_{2}|)$.  (add derivation here?) In such cases, this relationship is written as 
-	\begin{equation}
-	S_{xx}(\omega) = \Delta \sum_{\tau = -\infty}^{\infty} s_{xx}(\tau)e^{i\omega \tau \Delta} 
-	\end{equation}
-and 
-	\begin{equation}
-		s_{xx}(\tau) = \frac{1}{2\pi} \int_{-\pi / \Delta}^{\pi / \Delta}S_{xx}(\omega)e^{i \omega \Delta}d \omega.
-	\end{equation}
-\noindent where $\omega \in [-\pi/\Delta, \pi/ \Delta]$ is the angular frequency measured in radians \citep{Sykulski2013}
-.  In the complex-valued case, $s_{xx}$ and $S_{xx}$ are replaced with $s_{xy}$ and $S_{xy}$ to represent the cross-covariance terms \citep{Sykulski2013}. 
-
-Given an observed time series $X_{t}$, $t = 1,2,..,N$, the common estimator for the spectra is the periodogram, $\hat{S}_{xx}(\omega) = |J_{x}(\omega)|^{2}$ where 
-\begin{equation}
-J_{x}(\omega) = \sqrt{\frac{\Delta}{N}} \sum_{t=1}^{N} X_{t}e^{-i \omega t \Delta}. 
-\end{equation}
-Although simple, this estimator has two known issues: aliasing and leakage.  Aliasing is ... Leakage is... Tapering has been proposed to fix, but has problems.. 
-
-
-\section{Methods}
-
-\subsection{Model}
-\subsubsection{Inertial oscillations}
-
-Inertial oscillations are often modeled with the following set of deterministic differential equations (read and add physics citations)
-\begin{align}
-\frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu \\ \nonumber
-\frac{\partial v}{\partial t} - f_{0}u &= G - cv
+	\subsection{Spectral Analysis}
+	\indent We briefly review spectral analysis as these methods are central to understanding \citet{Sykulski2016}.  More thorough coverage of this material can be found in  \citep{Percival1993}, for example. From a statistical perspective, a time series, $x(t)$ can be understood as a realization of a stochastic process over time, where  $t = \{1,2,...,n\}$ are the observed time points.  Time series are often modeled as the sums of periodic functions, which, using Euler's formula, can be represented compactly as Fourier series. Moreover, data in the time domain can easily be related to data in the frequency domain and vice versa using the Fourier or inverse Fourier transformations 	\begin{align}
+x(t) \overset{ms}{=} \int_{-\infty}^{\infty} f_{x}(\omega)e^{i\omega t}d\omega && f_{x}(\omega) = \int_{-\infty}^{\infty} x(t) e^{-i \omega t }dt.
 \end{align}
-where $u$ and $v$ represent the vertical and horizontal velocity, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind. \citet{Sykulski2016} propose instead using a a complex-valued representation of the velocity, $z(t) = u(t) + i v(t)$,  from which we obtain 
-\begin{align*}
-\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}\\
-dz &= (F - c u- f_{0}v)dt + (iG - icv + if_{0}u)dt\\
-&= fo(-v + iu)dt - c(u + iv)dt + (F + iG)dt\\
-&= if_{0}(u + iv) - c(u + iv) + (F + iG)\\
-dz(t) &= (if_{0} - c)z dt + (F + iG)dt. 
-\end{align*}
-We further replace the wind forcing term, $(F + iG)dt$, with complex-valued Brownian increments, which is justified by blah (look up and cite the Mandelrot and Van Ness justification). Thus, we have a stochastic model which retains the desired relationship between the horizontal and vertical velocity components. \citet{Sykulski2016} further let $f_{0}$ be a free parameter, $\omega_{0}$, giving the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation.
+\citep{Percival1993}. To understand the distribution of frequencies, the \textbf{\it{power spectral density}},
+
+
 \begin{equation}
-dz(t) = (i \omega -c) z(t) dt + A d Q(t), 
+S_{x}(\omega) = \underset{T \rightarrow \infty}{lim} \mathbb{E} \left(\frac{1}{2T} \left| \int_{-T}^{T} x(t) e^{-i \omega t}dt \right|^{2} \right),
 \end{equation}
-Letting $\omega_{0}$ be estimated by data, rather than fixed at the inertial frequency allows for identification and estimation of the shifts in the angular frequency due to eddies. If the observed angular frequency differs from the inertial frequency, the angular frequency of the eddy can be calculated as $\omega_{eddy} = f_{0} - \omega_{0}$, since $\omega_{0}$ is a sum of the inertial and eddy frequencies.
+is often employed. This quantity represents the variance (or power) associated with each frequency \citep{Percival1993}. Power spectral densities are useful for statistical modeling, since they can be related to the autocovariance sequence of a time series using  Fourier transformation.  Defining the autocovariance as $s_{x}(\tau) = \mathbb{E}[x(t) x(t - \tau)] $ where $\tau$ is the time lag, we have
 
-The complex OU process has 
+\begin{align*}
+S_{x}(\omega) = \int_{-\infty}^{\infty}s_{x}(\tau) e^{-\omega t}dt  \Longleftrightarrow \frac{1}{2\pi} \int_{-\infty}^{\infty}S_{x}(\omega) e^{i \omega t} d\omega 
+\end{align*}
 
-
-		\subsubsection{Turbulent background}
-				\begin{itemize}
-					\item Mat\'{e}rn model 
-					\item comparison to other integer order processes (e.g. fractional brownian motion)
-				\end{itemize}
-		
-		\subsubsection{Aggregate model}
-			State that you can add two component models together
-	
-	\subsection{Model fitting}
-		\subsubsection{Whittle likelihood}
-				
-			\begin{itemize}
-				\item explanation of original Whittle likelihood and its problems (aliasing, leakage)
-				\item description of tapering `solution' to Whittle and discussion of its imperfections
-				\item blurred whittle likelihood 
-				\item allows for uncertainty estimates via asymptotics (Fisher information)
-			\end{itemize}
-	
-		\subsubsection{Model misspecification}
-			\begin{itemize}
-				\item semi-parametric approach in both time and frequency
-			\end{itemize}
-		\subsubsection{Time-varying parameters for non-stationarity}
-		
-		\subsubsection{Model selection/likelihood ratio tests}
-	
+\noindent \citep{Sykulski2013}. For an observed time series, the power spectral density is often estimated with the periodogram, $\hat{S}_{x}(\omega) = |J_{x}(\omega)|^{2}$ where 
+\begin{equation}
+J_{x}(\omega) = \sqrt{\frac{t}{N}} \sum_{t=1}^{N} x(t) e^{-i \omega t}
+\end{equation}
+\citep{Sykulski2013}. Although intuitively appealing, this estimator has known problems that stem from the sampling of a periodic function at discrete intervals. In particular,  high frequencies can  capture periodic behavior of other lower frequencies if that happen to align in period. Additionally, frequencies above the highest observable frequency cannot be captured, and, are instead, recorded as other frequencies in the spectrum.  These effects, referred to as $\textbf{\it{aliasing}}$ and $\textbf{\it{leakage}}$ respectively,  are typically reduced by $\textbf{\it{tapering}}$. This method uses  a window of frequencies for estimation rather than a single value. However, depending on how tapering is used, it can introduce its own  biases in estimation.  
 
 
+%\subsection{Model}
+%\subsubsection{Inertial oscillations}
 
-\section{Results}
+%Inertial oscillations are often modeled with the following set of deterministic differential equations \citep{Pollard1970}
+%\begin{align}
+%\frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu \\ \nonumber
+%\frac{\partial v}{\partial t} - f_{0}u &= G - cv
+%\end{align}
+%where $u$ and $v$ represent the vertical and horizontal velocity, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind. \citet{Sykulski2016} propose instead using a a complex-valued representation of the velocity, $z(t) = u(t) + i v(t)$,  from which we obtain 
+%\begin{align*}
+%\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}\\
+%dz &= (F - c u- f_{0}v)dt + (iG - icv + if_{0}u)dt\\
+%&= fo(-v + iu)dt - c(u + iv)dt + (F + iG)dt\\
+%&= if_{0}(u + iv) - c(u + iv) + (F + iG)\\
+%dz(t) &= (if_{0} - c)z dt + (F + iG)dt. 
+%\end{align*}
+%We further replace the wind forcing term, $(F + iG)dt$, with complex-valued Brownian increments, which is justified by blah (look up and cite the Mandelrot and Van Ness justification). Thus, we have a stochastic model which retains the desired relationship between the horizontal and vertical velocity components. \citet{Sykulski2016} further let $f_{0}$ be a free parameter, $\omega_{0}$, giving the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation.
+%\begin{equation}
+%dz(t) = (i \omega -c) z(t) dt + A d Q(t), 
+%\end{equation}
+%Letting $\omega_{0}$ be estimated by data, rather than fixed at the inertial frequency allows for identification and estimation of the shifts in the angular frequency due to eddies. If the observed angular frequency differs from the inertial frequency, the angular frequency of the eddy can be calculated as $\omega_{eddy} = f_{0} - \omega_{0}$, since $\omega_{0}$ is a sum of the inertial and eddy frequencies.
 
-	\subsection{Simulated results}
-		Include Figure 5
-		
-	\subsection{Real drifter data (with time-varying parameters)}
-		Include Figures 6-10
+%The complex OU process has 
 
-\section{Discussion}
-	\begin{itemize}
-		\item powerful technique overall
-		\item more work needed on selecting windows
-	\end{itemize}
 
-\section{Appendix}
-
-\subsection{Errata}
-	\begin{itemize}
-		\item Typo in equation 13
-	\end{itemize}
-
-\subsection{Optimization technique}
-	\begin{itemize}
-		\item My approach transforming parameters to an unconstrained space gives slightly better (higher maximum likelihood) estimates than their use of Matlab's built-in box constraint approach
-			\end{itemize}
 
 
 \bibliography{prelim}
