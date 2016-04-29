@@ -29,8 +29,6 @@ points(drift$lon[gStartTs:gEndTs], drift$lat[gStartTs:gEndTs], type = "l", col =
 points(drift$lon[bStartTs:bEndTs], drift$lat[bStartTs:bEndTs], type = "l", col = "blue")
 
 ###Figure 2###
-#To do: figure out how to get complex valued velocities (e.g. units)
-#Calculate velocities u(t) (horizontal) and v(t) (vertical)
 
 #pull out complex valued velocities
 bZ <- drift$cv[bStartTs:bEndTs]
@@ -90,7 +88,7 @@ points(DELTA*mat$omega, mat$sZ, col = "red", type = "l")
 CF <- mean(-4*pi*(drift$f[2971:3570]))
 N <- length(bZ)
 #Fit and plot blue time series
-bFit <- fitModel(bZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0)
+bFit <- fitModel(bZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0, quantSet = .5)
 par(mfrow = c(1,2))
 plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
@@ -107,7 +105,7 @@ abline(v = CF - bFit$w0, lwd = 3, lty = 3) #shifted inertial freq (f = f0 - w_ed
 
 #Fit and plot green time series
 #abline(v = f0, col = "red")
-gFit <- fitModel(gZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0)
+gFit <- fitModel(gZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0,  quantSet = 0.5)
 plot(DELTA*green$omega, green$sZ, type = "l", col = "green", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
 sTau <- ouAc(gFit$A, gFit$w0, gFit$C, N, delta = 1) + maternAc(gFit$B, gFit$alpha, gFit$h, N, delta = 1)  
@@ -128,12 +126,12 @@ vel1 <- vel[,1]
 #inertial frequency
 lat <- num[[10]] #latitudes
 psi <- mean(lat[,1])*pi/180 #average lat in radians
-f0  <- (8*pi/23.9345)*sin(psi) #still need to figure out where these
+f0  <- -(8*pi/23.9345)*sin(psi) #still need to figure out where these
                           #constant come from (physics, units issue)
 
 #left figure (first of 200 simulated drifters)
-sim1Fit <- fitModel(vel1, f0, DELTA, 1.5*f0/pi, 1.5*f0/pi) #periodogram
-sim1Per <- getPerio(vel1, delta = DELTA, dB = TRUE, noZero = FALSE) #fit model
+sim1Fit <- fitModel(vel1, CF = f0, DELTA, 1.5*f0/pi, 1.5*f0/pi, quantSet = .9)  #fit model
+sim1Per <- getPerio(vel1, delta = DELTA, dB = TRUE, noZero = FALSE) #periodogram
 N <- length(vel1)
 par(mfrow = c(1, 2))
 plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "blue",
@@ -141,7 +139,6 @@ plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "blue",
      xlab = expression(paste(omega, Delta)))
 mtext("Replication of Figure 5", outer = T, line = -3)
 
-#check how indexing is handled, clearly it's fitting wrong part
 sTau <- ouAc(sim1Fit$A, sim1Fit$w0, sim1Fit$C, N, delta = 1) + maternAc(sim1Fit$B, sim1Fit$alpha, sim1Fit$h, N, delta = 1)  
 tau <- seq(0, N - 1)
 sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
@@ -150,8 +147,9 @@ points(DELTA*sim1Per$omega[sim1Fit$firstIndex:sim1Fit$lastIndex], 10*log10(sBar)
        col = "green", type = "l", lwd = 3)
 abline(v = CF, lwd = 3) #inertial frequency
 
+
 #right figure
-nSim <- dim(sim)[2]
+nSim <- 200
 ensemOmega <- matrix(nrow = N, ncol = nSim)
 ensemSz <- matrix(nrow = N, ncol = nSim)
 for (i in 1:nSim) {
@@ -170,3 +168,62 @@ for (i in 2:nSim) {
   points(ensemOmega[,1], ensemSz[,i], col = "grey", type = "l")
 }
 points(ensemOmega[,1], meanEnsemSz, col = "blue", type = "l")
+
+#prepare ensemble sZ and omega as list to send to optimization
+currEnsem <- list(); currEnsem$sZ <- meanEnsemSz/2; currEnsem$omega <- ensemOmega
+
+ensemFit <- fitModel(Z = NULL, CF = f0, DELTA, fracPos = 1.5*f0/pi, fracNeg = 1.5*f0/pi, quantSet = .5,
+                     ensem = TRUE, curr = currEnsem)  #fit model
+sTau <- ouAc(ensemFit$A, ensemFit$w0, ensemFit$C, N, delta = 2) + 
+          maternAc(ensemFit$B, ensemFit$alpha, ensemFit$h, N, delta = 2)  
+tau <- seq(0, N - 1)
+sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+points(DELTA*ensemOmega[,1], 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
+points(DELTA*ensemOmega[ensemFit$firstIndex:ensemFit$lastIndex, 1], 10*log10(sBar)[ensemFit$firstIndex:ensemFit$lastIndex], 
+       col = "green", type = "l", lwd = 3)
+
+
+###Figure 6
+#12 measurements per day
+drifterulysses <- readMat("/users/hdirector/Documents/prelim/prelim/Code/drifterulysses.mat")
+
+driftUlys <- list("num" = as.vector(drifterulysses$drifterulysses[,,1]$num),
+              "lat" = as.vector(drifterulysses$drifterulysses[,,1]$lat),
+              "lon" = as.vector(drifterulysses$drifterulysses[,,1]$lon),
+              "cv" = as.vector(drifterulysses$drifterulysses[,,1]$cv),
+              "f" = as.vector(drifterulysses$drifterulysses[,,1]$f))
+par(mfrow = c(1, 2))
+plot(driftUlys$lon, driftUlys$lat, type = "l", col = "blue", xlim = c(-120, -80),
+     ylim = c(-40, -20), xlab = "Longitude", ylab = "Latitude") 
+mtext("Replication of Figure 6", outer = T, line = -3)
+#days of interest (day 358 to 378, 12 readings per day)
+currIndex <- (350*12 + 1):(370*12) #matching code not paper (days 350 to 370, vs 358 to 378)
+CF <- mean(4*pi*(driftUlys$f[currIndex]))
+NSamp <- length(currIndex)
+points(driftUlys$lon[currIndex], driftUlys$lat[currIndex], type = "l", col = "red")
+
+#get Periodogram
+samp <- getPerio(driftUlys$cv[currIndex], DELTA, dB = TRUE, noZero = TRUE)
+sampFit <- fitModel(driftUlys$cv[currIndex], CF, delta = 2, fracNeg = 0, fracPos = .4, quantSet = .5)
+plot(DELTA*samp$omega, samp$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
+     ylab = "dB", xlim = c(-pi, pi), ylim = c(-10, 50))
+sTau <- ouAc(sampFit$A, sampFit$w0, sampFit$C, NSamp, delta = 2) + maternAc(sampFit$B, sampFit$alpha, sampFit$h, NSamp, delta = 2)  
+tau <- seq(0, NSamp - 1)
+sBar <- 2*fft(sTau*(1 - (tau/NSamp))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+points(DELTA*samp$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
+points(DELTA*samp$omega[sampFit$firstIndex:sampFit$lastIndex], 10*log10(sBar)[sampFit$firstIndex:sampFit$lastIndex], 
+       col = "green", type = "l", lwd = 3)
+abline(v = CF, lwd = 3) #inertial frequency
+
+
+#Figure 8
+CF <- max(4*pi*(driftUlys$f)) #positive because of southern hemisphere, why at max not mean
+N <- length(driftUlys$num)
+DELTA <- 2
+for (t in 500:(N - 500)) {
+  currCv <- driftUlys$cv[(t - 499):(t + 500)] 
+  test <- fitModel(currCv, CF, DELTA, fracNeg = 1.75*CF/pi, 
+           fracPos = 1.75*CF/pi, quantSet = .5)
+  YY = drifterulysses.f; YY = 4*pi*YY;
+  A1 = max(YY); smp=1.75*A1/pi;
+}
