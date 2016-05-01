@@ -93,7 +93,7 @@ par(mfrow = c(1,2))
 plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
 mtext("Replication of Figure 4", outer = T, line = -3)
-sTau <- ouAc(bFit$A, bFit$w0, bFit$C, N, delta = 1) + maternAc(bFit$B, bFit$alpha, bFit$h, N, delta = 1)  
+sTau <- ouAc(bFit$A, bFit$w0, bFit$C, N) + maternAc(bFit$B, bFit$alpha, bFit$h, N)  
 tau <- seq(0, N - 1)
 sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
 points(DELTA*blue$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
@@ -108,7 +108,7 @@ abline(v = CF - bFit$w0, lwd = 3, lty = 3) #shifted inertial freq (f = f0 - w_ed
 gFit <- fitModel(gZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0,  quantSet = 0.5)
 plot(DELTA*green$omega, green$sZ, type = "l", col = "green", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
-sTau <- ouAc(gFit$A, gFit$w0, gFit$C, N, delta = 1) + maternAc(gFit$B, gFit$alpha, gFit$h, N, delta = 1)  
+sTau <- ouAc(gFit$A, gFit$w0, gFit$C, N) + maternAc(gFit$B, gFit$alpha, gFit$h, N)  
 tau <- seq(0, N - 1)
 sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
 points(DELTA*green$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
@@ -139,59 +139,68 @@ plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "blue",
      xlab = expression(paste(omega, Delta)))
 mtext("Replication of Figure 5", outer = T, line = -3)
 
-sTau <- ouAc(sim1Fit$A, sim1Fit$w0, sim1Fit$C, N, delta = 1) + maternAc(sim1Fit$B, sim1Fit$alpha, sim1Fit$h, N, delta = 1)  
+sTau <- ouAc(sim1Fit$A, sim1Fit$w0, sim1Fit$C, N) + maternAc(sim1Fit$B, sim1Fit$alpha, sim1Fit$h, N)  
 tau <- seq(0, N - 1)
 sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
 points(DELTA*sim1Per$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
 points(DELTA*sim1Per$omega[sim1Fit$firstIndex:sim1Fit$lastIndex], 10*log10(sBar)[sim1Fit$firstIndex:sim1Fit$lastIndex], 
        col = "green", type = "l", lwd = 3)
-abline(v = CF, lwd = 3) #inertial frequency
-
 
 #right figure
+#storage vector for 10log10(sBar), which we will need to calculate an average
 nSim <- 200
-ensemOmega <- matrix(nrow = N, ncol = nSim)
-ensemSz <- matrix(nrow = N, ncol = nSim)
-for (i in 1:nSim) {
-  temp <- getPerio(vel[,i], delta = DELTA, dB = TRUE, noZero = FALSE) #fit mode
-  ensemOmega[,i] <- temp$omega
-  ensemSz[,i] <- temp$sZ
-}
+sBarMat <- matrix(nrow = N, ncol = nSim)
+sZMat <- matrix(nrow = N, ncol = nSim)
+sBarMat[,1] <- 10*log10(sBar)
+sZMat[,1] <- sim1Per$sZ
 
-#ensemble mean periodogram
-meanEnsemSz <- apply(ensemSz, 1, mean)
-
-plot(ensemOmega[,1], ensemSz[,1], type = "l", ylab = "dB",
-          xlab = expression(paste(omega, Delta)), ylim = c(-40, 60),
-          xlim = c(-pi, pi), col = "gray")
+#Loop through and fit other 199 simulations 
 for (i in 2:nSim) {
-  points(ensemOmega[,1], ensemSz[,i], col = "grey", type = "l")
+  #fit each of the 200 simulations
+  tempFit <- fitModel(vel[,i], CF = f0, DELTA, 1.5*f0/pi, 1.5*f0/pi, quantSet = .9)  #fit model
+  tempPer <- getPerio(vel[,i], delta = DELTA, dB = TRUE, noZero = FALSE) #periodogram
+  N <- length(vel[,i])
+  #plot spectrum and model fit 
+  sTau <- ouAc(tempFit$A, tempFit$w0, tempFit$C, N) + maternAc(tempFit$B, tempFit$alpha, tempFit$h, N)  
+  tau <- seq(0, N - 1)
+  sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+  sBarMat[,i] <- 10*log10(sBar)
+  sZMat[,i] <- tempPer$sZ
+  print(i)
 }
-points(ensemOmega[,1], meanEnsemSz, col = "blue", type = "l")
 
-#prepare ensemble sZ and omega as list to send to optimization
-currEnsem <- list(); currEnsem$sZ <- meanEnsemSz/2; currEnsem$omega <- ensemOmega
+#plot first periodogram make initial plot
+plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "lightgrey",
+     ylim = c(-40, 60), xlim = c(-pi, pi), ylab = "dB",
+     xlab = expression(paste(omega, Delta)))
 
-ensemFit <- fitModel(Z = NULL, CF = f0, DELTA, fracPos = 1.5*f0/pi, fracNeg = 1.5*f0/pi, quantSet = .5,
-                     ensem = TRUE, curr = currEnsem)  #fit model
-sTau <- ouAc(ensemFit$A, ensemFit$w0, ensemFit$C, N, delta = 2) + 
-          maternAc(ensemFit$B, ensemFit$alpha, ensemFit$h, N, delta = 2)  
-tau <- seq(0, N - 1)
-sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
-points(DELTA*ensemOmega[,1], 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
-points(DELTA*ensemOmega[ensemFit$firstIndex:ensemFit$lastIndex, 1], 10*log10(sBar)[ensemFit$firstIndex:ensemFit$lastIndex], 
-       col = "green", type = "l", lwd = 3)
+#Add all the other periodograms
+for (i in 2:nSim) {
+  points(sim1Per$omega, sZMat[,i], type = "l", col = "lightgray")
+}
+#plot all fits on top 
+for (i in 1:nSim) {
+  points(DELTA*sim1Per$omega, sBarMat[,i], col = "darkgrey", type = "l", lwd = 1)
+}
 
+#Calculate and add ensemble mean periodogram and fit
+meanEnsemSz <- apply(sZMat, 1, mean)
+meanEnsemSBar <- apply(sBarMat, 1, mean)
+points(DELTA*sim1Per$omega, meanEnsemSz, col = "blue", type = "l")
+points(DELTA*sim1Per$omega, meanEnsemSBar, col = "red", lty = 3, type = "l", lwd = 3)
+points(DELTA*sim1Per$omega[sim1Fit$firstIndex:sim1Fit$lastIndex],
+       meanEnsemSBar[sim1Fit$firstIndex:sim1Fit$lastIndex], col = "green", type = "l", lwd = 3)
 
 ###Figure 6
 #12 measurements per day
 drifterulysses <- readMat("/users/hdirector/Documents/prelim/prelim/Code/drifterulysses.mat")
-
 driftUlys <- list("num" = as.vector(drifterulysses$drifterulysses[,,1]$num),
               "lat" = as.vector(drifterulysses$drifterulysses[,,1]$lat),
               "lon" = as.vector(drifterulysses$drifterulysses[,,1]$lon),
               "cv" = as.vector(drifterulysses$drifterulysses[,,1]$cv),
               "f" = as.vector(drifterulysses$drifterulysses[,,1]$f))
+DELTA <- 2
+
 par(mfrow = c(1, 2))
 plot(driftUlys$lon, driftUlys$lat, type = "l", col = "blue", xlim = c(-120, -80),
      ylim = c(-40, -20), xlab = "Longitude", ylab = "Latitude") 
@@ -204,10 +213,11 @@ points(driftUlys$lon[currIndex], driftUlys$lat[currIndex], type = "l", col = "re
 
 #get Periodogram
 samp <- getPerio(driftUlys$cv[currIndex], DELTA, dB = TRUE, noZero = TRUE)
-sampFit <- fitModel(driftUlys$cv[currIndex], CF, delta = 2, fracNeg = 0, fracPos = .4, quantSet = .5)
+sampFit <- fitModel(driftUlys$cv[currIndex], CF, delta = 2, fracNeg = 0, fracPos = .4,
+                    quantSet = .5, incZero = TRUE)
 plot(DELTA*samp$omega, samp$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-10, 50))
-sTau <- ouAc(sampFit$A, sampFit$w0, sampFit$C, NSamp, delta = 2) + maternAc(sampFit$B, sampFit$alpha, sampFit$h, NSamp, delta = 2)  
+sTau <- ouAc(sampFit$A, sampFit$w0, sampFit$C, NSamp) + maternAc(sampFit$B, sampFit$alpha, sampFit$h, NSamp)  
 tau <- seq(0, NSamp - 1)
 sBar <- 2*fft(sTau*(1 - (tau/NSamp))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
 points(DELTA*samp$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
@@ -215,15 +225,107 @@ points(DELTA*samp$omega[sampFit$firstIndex:sampFit$lastIndex], 10*log10(sBar)[sa
        col = "green", type = "l", lwd = 3)
 abline(v = CF, lwd = 3) #inertial frequency
 
-
-#Figure 8
+#Figures 7-10
+#constants
 CF <- max(4*pi*(driftUlys$f)) #positive because of southern hemisphere, why at max not mean
 N <- length(driftUlys$num)
 DELTA <- 2
-for (t in 500:(N - 500)) {
-  currCv <- driftUlys$cv[(t - 499):(t + 500)] 
-  test <- fitModel(currCv, CF, DELTA, fracNeg = 1.75*CF/pi, 
-           fracPos = 1.75*CF/pi, quantSet = .5)
-  YY = drifterulysses.f; YY = 4*pi*YY;
-  A1 = max(YY); smp=1.75*A1/pi;
+nWin <- 999
+
+#find region to fit model in
+fracPos <- 1.75*max(4*pi*driftUlys$f)/pi #figure out exactly the logic of this cut-off
+
+#initial periodogram and par fit (use for set up)
+toStartPer <- getPerio(driftUlys$cv[1:nWin], DELTA, dB = TRUE, noZero = TRUE) 
+toStartFit <- fitModel(driftUlys$cv[1:nWin], CF,  DELTA, fracNeg = 0, fracPos = fracPos,
+                       quantSet = 0.8, incZero = TRUE, hess = TRUE)
+
+#frequencies of interest
+firstIndex <- toStartFit$firstIndex
+lastIndex <- toStartFit$lastIndex
+nOmega <-length(firstIndex:lastIndex)
+sZMat <- matrix(ncol = nOmega, nrow = N - 499*2)
+
+#rolling window CF (taking the max)
+CFVec <- rep(NA, N - 499*2)
+for (i in 500:(N - 499)) {
+  CFVec[i - 499] <- mean(4*pi*(driftUlys$f[(i - 499):(i + 499)])) #positive because of southern hemisphere, why at max not mean
 }
+
+#get observed periodogram
+for (i in 500:(N - 499)) {
+  tempPer <- getPerio(driftUlys$cv[(i - 499):(i + 499)], DELTA, dB = TRUE, noZero = TRUE) 
+  sZMat[i - 499, ] <- tempPer$sZ[firstIndex:lastIndex]
+}
+
+#storage vectors for parameters and CI Bounds
+par6Val <- matrix(nrow = N - 499*2, ncol = 6)
+colnames(par6Val) <- c("A", "B", "w0", "C", "h", "alpha")
+par6LB <- par6UB <- par6Val
+par6Val[1, ] <- c(toStartFit$A, toStartFit$B, toStartFit$w0,
+                  toStartFit$C, toStartFit$h, toStartFit$alpha)
+#Confidence interval for first time point
+step <- qnorm(.975)*sqrt(diag(solve(toStartFit$hess))/nWin)
+par6LB[1, ] <- par6Val[1, ] - step; par6UB[1, ] <- par6Val[1, ] + step
+
+#Loop through all time points and calc par estimate and CI
+for (i in 501:(N - 499)) {
+  currCv <- driftUlys$cv[(i - 499):(i + 499)] 
+  #fit parameters, initialize estimates at value used in last run
+  tempFit <- fitModel(currCv, CF, DELTA, fracNeg = 0, fracPos = fracPos,
+                  quantSet = .5, needInits = FALSE, parInit = par6[i - 499 - 1, ],
+                  hess = TRUE)
+  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
+                    tempFit$C, tempFit$h, tempFit$alpha)
+  #calculate confidence interval via Fisher's information
+  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess))/nWin)
+  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
+  print(i)
+}
+
+#plot observed periodogram
+par(mfrow = c(2, 1))
+image.plot((500:(N - 499))/12, 2*toStartPer$omega[firstIndex:lastIndex],
+           sZMat, useRaster = TRUE, zlim = c(20, 60),
+           ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
+           xlab = "Day")
+points((500:(N - 499))/12, CFVec, col = "white", lwd = .01)
+mtext("Replication of Figure 7", outer = T, line = -3)
+
+#find and plot fitted periodogram
+sZMatObsa <- matrix(ncol = nOmega, nrow = N - 499*2)
+for (i in 1:(N - 499*2)) {
+  sTau <- (ouAc(parVal[i, "A"], parVal[i, "w0"], parVal[i, "C"], nWin) +
+                 maternAc(parVal[i, "B"], parVal[i, "alpha"], parVal[i, "h"], nWin))  
+  tau <- seq(0, nWin - 1)
+  sBar <- 2*fft(sTau*(1 - (tau/nWin))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+  sZMatObs[i, ] <- 10*log10(sBar)[toStartFit$firstIndex:toStartFit$lastIndex]
+}
+
+#Figure 8 parameter estimates over times
+par(mfrow = c(1, 1))
+plot((500:(N - 499))/12, par6[,"w0"], ylim = c(.43, .67), type = "l", 
+     xlab = "Day", ylab = "Inertial Frequencies", col = "blue")
+polygon(c(rev((500:(N - 499))/12), (500:(N - 499))/12), border = NA,
+        c(rev(par6UB[, "w0"]), par6LB[, "w0"]), col = "lavender")
+mtext("Replication of Figure 8", outer = T, line = -3)
+points((500:(N - 499))/12, CFVec, col = "red", type ="l")
+plot((500:(N - 499))/12, par6[, "A"], ylim = c(0, 27), type = "l",
+     xlab = "Day", ylab  = "Amplitudes", col = "blue")
+polygon(c(rev((500:(N - 499))/12), (500:(N - 499))/12),  border = NA,
+        c(rev(par6UB[, "A"]), par6LB[, "A"]), col = "lavender")
+points((500:(N - 499))/12, par6[, "B"], col = "red", type = "l")
+polygon(c(rev((500:(N - 499))/12)[1:500], (500:(N - 499))/12)[1:500],  border = NA,
+        c(rev(par6LB[, "B"])[1:500], par6UB[, "B"])[1:500], col = "pink")
+plot((500:(N - 499))/12, par6[, "C"], ylim = c(0, 0.2), type = "l",
+     xlab = "Day", ylab = "Dampening", col = "blue")
+points((500:(N - 499))/12, par6[, "h"], col = "red", type = "l")
+plot((500:(N - 499))/12, par6[, "alpha"], ylim = c(0.58, 1.45), type = "l",
+     xlab = "Day", ylab = "Slope Parameter", col = "blue")
+
+
+
+##Figure 9
+#storage vectors for 5 parameter model
+par5 <- matrix(nrow = N - 499*2, ncol = 5)
+colnames(par5) <- c("A", "B", "w0", "C", "h", "alpha")
