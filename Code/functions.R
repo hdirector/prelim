@@ -29,18 +29,16 @@ maternAc <- function(B, alpha, h, N, delta) {
   ac <- rep(NA, N)
   ac[1] <- ((B^2)*beta(0.5, alpha - 0.5))/(2*pi*abs(h)^(2*alpha  - 1)) #variance (cov at lag 0) 
   tau <- 1:(N - 1) #lags 
-  ac[2:N] <- ((B^2*(abs(h)*delta*tau)^(alpha - 0.5)*besselK(abs(h)*delta*tau, alpha - 0.5))/
+  ac[2:N] <- ((B^2*(abs(h)*tau)^(alpha - 0.5)*besselK(abs(h)*tau, alpha - 0.5))/
                 (2^(alpha - 1/2)*pi^(1/2)*exp(lgamma(alpha))*abs(h)^(2*alpha  - 1))) 
   return(ac)
 }
 
 #Function to get autocorrelation for the OU process 
-#(TO DO: DETERMINE IF TYPO IS IN THEIR CODE OR PAPER 
-#(should there be a delta in this function)
 ouAc <- function(A, w0, C, N, delta) {
   ac <- rep(NA, N)
   tau <- 0:(N - 1) #lags 
-  ac <- (0i + A^2/abs(2*C))*exp(1i*w0*delta*tau)*exp(0i + -abs(C)*delta*tau)
+  ac <- (0i + A^2/abs(2*C))*exp(1i*w0*tau)*exp(0i + -abs(C)*tau)
   return(ac)
 }
 
@@ -93,28 +91,58 @@ ll <- function(theta,delta, curr, firstIndex, lastIndex, medIndex, incZero = FAL
     C <- theta[4]; h <- theta[5]; alpha <- theta[6]
   }
   
-  #value is too high and will crash
-  if (alpha > 171) {
-    print("alpha")
-  }
   N <- length(curr$sZ)
   tau <-  seq(0, N - 1, 1)
   sTau <- ouAc(A, w0, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
   sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) #Interpet this, why no negs for sBar?
-  llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex] + log(sBar[firstIndex:lastIndex]))
-  print(llVal)
+  if (incZero == TRUE) {
+    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
+  } else {
+    tempIndex <- c(firstIndex:(medIndex - 1), (medIndex + 1):lastIndex)
+    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
+  }
   return(100*log(llVal))
 }
 
-#Function to fit likelihood
-fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet,
-                     ensem = FALSE, curr = NULL) {
-  
-  #calc. periodogram in function, unless it's an ensemble mean
-  if (ensem == FALSE ) {
-    curr <- getPerio(Z, delta, dB = FALSE, noZero = TRUE)
-    curr$sZ <- curr$sZ/delta #renormalize based on delta
+#Blurred Whittle likelihood for calculating Hessian 
+#same as ll for optimizing, but needs all parameters to be x
+llHess <- function(pars) {
+  theta <- pars[1:6]; delta <- pars[7]; curr <- pars[8]; firstIndex <- pars[9];
+  lastIndex <- pars[10]; medIndex <- pars[11]; incZero <- pars[12]; trans <- pars[13]
+  #theta = (A, B, w0,c, h, alpha) 
+  #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
+  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
+  if (trans == TRUE) {
+    A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1; w0 <- theta[3]
+    C <- expm1(theta[4]) + pi*sqrt(3)/N  + 1
+    h <- expm1(theta[5]) + pi*sqrt(3)/N + 1
+    alpha <- expm1(theta[6]) + 0.5 + 1
+  } else {
+    A <- theta[1]; B <- theta[2]; w0 <- theta[3];
+    C <- theta[4]; h <- theta[5]; alpha <- theta[6]
   }
+  
+  N <- length(curr$sZ)
+  tau <-  seq(0, N - 1, 1)
+  sTau <- ouAc(A, w0, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
+  sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) #Interpet this, why no negs for sBar?
+  if (incZero == TRUE) {
+    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
+  } else {
+    tempIndex <- c(firstIndex:(medIndex - 1), (medIndex + 1):lastIndex)
+    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
+  }
+  return(100*log(llVal))
+}
+
+
+#Function to fit likelihood
+fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
+                     needInits = TRUE, parInit = NULL, hess = FALSE) {
+  
+  #calc. periodogram in function
+  curr <- getPerio(Z, delta, dB = FALSE, noZero = FALSE)
+  curr$sZ <- curr$sZ #renormalize based on delta
   
   N <- length(curr$sZ)
   
@@ -122,36 +150,39 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet,
   medIndex <- floor(N/2) + 1 #middle value (freq = 0)
   firstIndex <- round((medIndex - 1)*(1 - fracNeg) + 1) #index of minimum frequency considered
   lastIndex <- round(medIndex + fracPos*(N - medIndex)) #index of maximum frequency considered
+  
+  if (needInits == TRUE) {
   ####initial parameter estimates (using the well-reasoned parameters suggested in the paper's published code)
   #theta = (A, B, w0,c, h, alpha) 
   #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
-  parInit <- rep(NA, 6) 
-  parInit[3] <- CF #set w0 to coriolis freq
-  parInit[6] <- 1 #set smoothness to 1 (corresponds to f^-2 decay)
-  #TO DO: UNDERSTAND LOGIC OF THESE INITIAL PARAMETERS (claim to be from solving simultaneous eq's of spectral, but not an exact match to what's in paper)
-  
-  #Find initial guess for OU amplitude and dampening, zero in on area around inertial oscillation peak 
-  #Find index of  where frequencies move from inertial freq and turbulent background (as a guess, the author's use half the coriolis freq)
-  divideIndex <- round(medIndex + (0.5*CF/pi)*medIndex)
-  #Find index of max value (other than w = 0), need to search diff direction depending on sign of CF
-  if (CF > 0) {
-    maxIndex <- which.max(curr$sZ[divideIndex:N]) + divideIndex
-  } else {
-    maxIndex <- which.max(curr$sZ[1:divideIndex])
-  }
-  #Consider freq's one either side of peak for ou par (1/3 of the distance, arbitrary choice used by author's just for initial parameters)
-  numTest <- ceiling(abs(medIndex - maxIndex)/3)
-  ioIndex <- c((maxIndex - numTest):(maxIndex -1), (maxIndex + 1):(maxIndex + numTest))
-  parInit[4] <- quantile((curr$sZ[ioIndex]*(delta*curr$omega[ioIndex] - CF)^2)/(curr$sZ[maxIndex] - curr$sZ[ioIndex]), quantSet)
-  parInit[1] <- curr$sZ[maxIndex]*parInit[4]
-  parInit[1] <- sqrt(parInit[1]); parInit[4] <- sqrt(parInit[4])
-  
-  #Find initial guess for Matern amplitude and slope; zero in on area around turbulent background peak
-  turbIndex <- c((medIndex - numTest):(medIndex - 1), (medIndex + 1):(medIndex + numTest))
-  parInit[5] <- quantile(((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])), quantSet)
-  parInit[2] <- sqrt(max(curr$sZ)*parInit[5]); parInit[5] <- sqrt(parInit[5])
-  
+    parInit <- rep(NA, 6) 
+    parInit[3] <- CF #set w0 to coriolis freq
+    parInit[6] <- 1 #set smoothness to 1 (corresponds to f^-2 decay)
+    #TO DO: UNDERSTAND LOGIC OF THESE INITIAL PARAMETERS (claim to be from solving simultaneous eq's of spectral, but not an exact match to what's in paper)
+    
+    #Find initial guess for OU amplitude and dampening, zero in on area around inertial oscillation peak 
+    #Find index of  where frequencies move from inertial freq and turbulent background (as a guess, the author's use half the coriolis freq)
+    divideIndex <- round(medIndex + (0.5*CF/pi)*medIndex)
+    #Find index of max value (other than w = 0), need to search diff direction depending on sign of CF
+    if (CF > 0) {
+      maxIndex <- which.max(curr$sZ[divideIndex:N]) + divideIndex
+    } else {
+      maxIndex <- which.max(curr$sZ[1:divideIndex])
+    }
+    #Consider freq's one either side of peak for ou par (1/3 of the distance, arbitrary choice used by author's just for initial parameters)
+    numTest <- floor(abs(medIndex - maxIndex)/3)
+    ioIndex <- c((maxIndex - numTest):(maxIndex -1), (maxIndex + 1):(maxIndex + numTest))
+    parInit[4] <- quantile((curr$sZ[ioIndex]*(delta*curr$omega[ioIndex] - CF)^2)/(curr$sZ[maxIndex] - curr$sZ[ioIndex]), quantSet)
+    parInit[1] <- curr$sZ[maxIndex]*parInit[4]
+    parInit[1] <- sqrt(parInit[1]); parInit[4] <- sqrt(parInit[4])
+    
+    #Find initial guess for Matern amplitude and slope; zero in on area around turbulent background peak
+    turbIndex <- c((medIndex - numTest):(medIndex - 1), (medIndex + 1):(medIndex + numTest))
+    parInit[5] <- quantile(((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])), quantSet)
+    parInit[2] <- sqrt(max(curr$sZ)*parInit[5]); parInit[5] <- sqrt(parInit[5])
+  }  
+
   #Transform parameters to an unconstrained space for optimization
   transParInit <- rep(NA, 6)
   transParInit[1] <- log1p(parInit[1] - 1) #0 < A < inf ===> -inf < log(A) < inf
@@ -172,8 +203,17 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet,
   fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1 , opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N + 1, 
             expm1(opt$par[5]) + pi*sqrt(3)/N + 1, expm1(opt$par[6]) + 0.5 + 1)
   
+  if (hess == TRUE) {
+    #Run again starting at true parameters on an untransformed space to get the hessian
+    hess <- optim(fin, ll, delta = delta, curr = curr, trans = FALSE,
+                 firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
+                 control = list(maxit = 5, reltol=1e-1000), hessian = TRUE)$hessian
+  }
+  
+  #Return results
   return(list("A" = fin[1], "B" = fin[2], "w0" = fin[3],
               "C" = fin[4], "h" = fin[5], "alpha" = fin[6],
-              "firstIndex" = firstIndex, "lastIndex" = lastIndex))
+              "firstIndex" = firstIndex, "lastIndex" = lastIndex,
+              "hess" = hess))
 
 }
