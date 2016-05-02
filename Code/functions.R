@@ -77,7 +77,8 @@ simFBM <- function(B, alpha, H, N) {
 }
 
 #Blurred Whittle likelihood
-ll <- function(theta,delta, curr, firstIndex, lastIndex, medIndex, incZero = FALSE, trans = TRUE) {
+ll <- function(theta,delta, curr, firstIndex, lastIndex, medIndex,
+               incZero = FALSE, trans = TRUE) {
   #theta = (A, B, w0,c, h, alpha) 
   #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
@@ -104,27 +105,26 @@ ll <- function(theta,delta, curr, firstIndex, lastIndex, medIndex, incZero = FAL
   return(100*log(llVal))
 }
 
-#Blurred Whittle likelihood for calculating Hessian 
-#same as ll for optimizing, but needs all parameters to be x
-llHess <- function(pars) {
-  theta <- pars[1:6]; delta <- pars[7]; curr <- pars[8]; firstIndex <- pars[9];
-  lastIndex <- pars[10]; medIndex <- pars[11]; incZero <- pars[12]; trans <- pars[13]
+
+#Simplified Blurred Whittle likelihood (5 parameter model)
+llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
+               incZero = FALSE, trans = TRUE, CF) {
   #theta = (A, B, w0,c, h, alpha) 
-  #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
+  #A > 0: ou amplitude, B > 0: matern amplitude; 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
   if (trans == TRUE) {
-    A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1; w0 <- theta[3]
-    C <- expm1(theta[4]) + pi*sqrt(3)/N  + 1
-    h <- expm1(theta[5]) + pi*sqrt(3)/N + 1
-    alpha <- expm1(theta[6]) + 0.5 + 1
+    A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1
+    C <- expm1(theta[3]) + pi*sqrt(3)/N  + 1
+    h <- expm1(theta[4]) + pi*sqrt(3)/N + 1
+    alpha <- expm1(theta[5]) + 0.5 + 1
   } else {
-    A <- theta[1]; B <- theta[2]; w0 <- theta[3];
-    C <- theta[4]; h <- theta[5]; alpha <- theta[6]
+    A <- theta[1]; B <- theta[2]; 
+    C <- theta[3]; h <- theta[4]; alpha <- theta[5]
   }
   
   N <- length(curr$sZ)
   tau <-  seq(0, N - 1, 1)
-  sTau <- ouAc(A, w0, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
+  sTau <- ouAc(A, CF, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
   sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) #Interpet this, why no negs for sBar?
   if (incZero == TRUE) {
     llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
@@ -134,11 +134,10 @@ llHess <- function(pars) {
   }
   return(100*log(llVal))
 }
-
 
 #Function to fit likelihood
 fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
-                     needInits = TRUE, parInit = NULL, hess = FALSE) {
+                     needInits = TRUE, parInit = NULL, hess = FALSE, simpModel = FALSE) {
   
   #calc. periodogram in function
   curr <- getPerio(Z, delta, dB = FALSE, noZero = FALSE)
@@ -152,10 +151,10 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
   lastIndex <- round(medIndex + fracPos*(N - medIndex)) #index of maximum frequency considered
   
   if (needInits == TRUE) {
-  ####initial parameter estimates (using the well-reasoned parameters suggested in the paper's published code)
-  #theta = (A, B, w0,c, h, alpha) 
-  #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
-  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
+    ####initial parameter estimates (using the well-reasoned parameters suggested in the paper's published code)
+    #theta = (A, B, w0,c, h, alpha) 
+    #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
+    #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
     parInit <- rep(NA, 6) 
     parInit[3] <- CF #set w0 to coriolis freq
     parInit[6] <- 1 #set smoothness to 1 (corresponds to f^-2 decay)
@@ -182,38 +181,72 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
     parInit[5] <- quantile(((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])), quantSet)
     parInit[2] <- sqrt(max(curr$sZ)*parInit[5]); parInit[5] <- sqrt(parInit[5])
   }  
-
+  
+  if (simpModel == TRUE) {
+    parInit <- parInit[c(1:2, 4:6)]
+  }
+  
   #Transform parameters to an unconstrained space for optimization
-  transParInit <- rep(NA, 6)
-  transParInit[1] <- log1p(parInit[1] - 1) #0 < A < inf ===> -inf < log(A) < inf
-  transParInit[2] <- log1p(parInit[2] - 1) #0 < B < inf ===> -inf < log(B) < inf 
-  transParInit[3] <- parInit[3] #-inf < w0 < inf ===> -inf <- w0 < inf
-  transParInit[4] <- log1p(parInit[4] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
-  transParInit[5] <- log1p(parInit[5] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
-  transParInit[6] <- log1p(parInit[6] - 0.5 - 1) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
+  if (simpModel == FALSE) {
+    transParInit <- rep(NA, 6)
+    transParInit[1] <- log1p(parInit[1] - 1) #0 < A < inf ===> -inf < log(A) < inf
+    transParInit[2] <- log1p(parInit[2] - 1) #0 < B < inf ===> -inf < log(B) < inf 
+    transParInit[3] <- parInit[3] #-inf < w0 < inf ===> -inf <- w0 < inf
+    transParInit[4] <- log1p(parInit[4] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
+    transParInit[5] <- log1p(parInit[5] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
+    transParInit[6] <- log1p(parInit[6] - 0.5 - 1) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
+  } else {
+    transParInit <- rep(NA, 5)
+    transParInit[1] <- log1p(parInit[1] - 1) #0 < A < inf ===> -inf < log(A) < inf
+    transParInit[2] <- log1p(parInit[2] - 1) #0 < B < inf ===> -inf < log(B) < inf 
+    transParInit[3] <- log1p(parInit[3] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
+    transParInit[4] <- log1p(parInit[4] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
+    transParInit[5] <- log1p(parInit[5] - 0.5 - 1) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
+  }
   
   #Maximize likelihood numerically
   #theta = (A, B, w0,c, h, alpha) 
   #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
-  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
+  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37)
+  
+  if (simpModel == FALSE) {
   opt <- optim(transParInit, ll, delta = delta, curr = curr, 
                firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
                control = list(maxit = 1000000000, reltol=1e-1000))
+  } else {
+  opt <- optim(transParInit, llSimp, delta = delta, curr = curr, 
+          firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
+          medIndex = medIndex, 
+          control = list(maxit = 1000000000, reltol=1e-1000))
+  }
+  llVal <- exp(opt$val/100)
   
-  fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1 , opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N + 1, 
+  if (simpModel == FALSE) {
+    fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1 , opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N + 1, 
             expm1(opt$par[5]) + pi*sqrt(3)/N + 1, expm1(opt$par[6]) + 0.5 + 1)
+  } else {
+    fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1, expm1(opt$par[3]) + pi*sqrt(3)/N + 1, 
+              expm1(opt$par[4]) + pi*sqrt(3)/N + 1, expm1(opt$par[5]) + 0.5 + 1)
+  }
   
   if (hess == TRUE) {
     #Run again starting at true parameters on an untransformed space to get the hessian
     hess <- optim(fin, ll, delta = delta, curr = curr, trans = FALSE,
-                 firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
-                 control = list(maxit = 5, reltol=1e-1000), hessian = TRUE)$hessian
+                  firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
+                  control = list(maxit = 5, reltol=1e-1000), hessian = TRUE)$hessian
   }
   
   #Return results
-  return(list("A" = fin[1], "B" = fin[2], "w0" = fin[3],
-              "C" = fin[4], "h" = fin[5], "alpha" = fin[6],
-              "firstIndex" = firstIndex, "lastIndex" = lastIndex,
-              "hess" = hess))
-
+  if (simpModel == FALSE) {
+    return(list("A" = fin[1], "B" = fin[2], "w0" = fin[3],
+                "C" = fin[4], "h" = fin[5], "alpha" = fin[6],
+                "firstIndex" = firstIndex, "lastIndex" = lastIndex,
+                "hess" = hess, llVal = llVal))
+  } else {
+    return(list("A" = fin[1], "B" = fin[2], 
+                "C" = fin[3], "h" = fin[4], "alpha" = fin[5],
+                "firstIndex" = firstIndex, "lastIndex" = lastIndex,
+                "hess" = hess, llVal = llVal))
+  }
+  
 }
