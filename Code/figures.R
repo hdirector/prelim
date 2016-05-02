@@ -23,10 +23,12 @@ bStartTs <- 2971; bEndTs <-3570 #index of 50 day period in blue is obtained from
 gStartTs <- 4201; gEndTs <- 4800 #index of 50 day period in blue is obtained from Sykulski et al posted Matlab code
 
 #plot time series, coloring particular sections 
+pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig1.pdf')
 plot(drift$lon[startTs:endTs], drift$lat[startTs:endTs], type = "l", 
      xlab = "Longitude", ylab = "Latitude", main = "Replication of Figure 1 (Right)")
 points(drift$lon[gStartTs:gEndTs], drift$lat[gStartTs:gEndTs], type = "l", col = "green")
 points(drift$lon[bStartTs:bEndTs], drift$lat[bStartTs:bEndTs], type = "l", col = "blue")
+dev.off()
 
 ###Figure 2###
 
@@ -45,16 +47,20 @@ green <- getPerio(Z = gZ, delta = DELTA)
 #bLat <- (pi/2)*(drift$lat[bStartTs:bEndTs]/90)
 #bf0 <- 2*pi*-2*psi*sin(bLat)*1000
 #mean(bf0)
+gCf <- mean(-4*pi*drift$f[gStartTs:gEndTs])
+bCf <- mean(-4*pi*drift$f[bStartTs:gStartTs])
 
 #plot figure
+pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig2.pdf')
 par(mfrow = c(1, 2))
 plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
-#abline(v = f0, col = "red")
+abline(v = bCf, col = "red")
 plot(DELTA*green$omega, green$sZ, type = "l", col = "green", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
 mtext("Replication of Figure 2", outer = T, line = -3)
-#abline(v = f0, col = "red")
+abline(v = gCf, col = "red")
+dev.off()
 
 ###Figure 3
 ###TO DO: How did they come up with these variance (autocorrelation at 0)?
@@ -127,7 +133,7 @@ vel1 <- vel[,1]
 lat <- num[[10]] #latitudes
 psi <- mean(lat[,1])*pi/180 #average lat in radians
 f0  <- -(8*pi/23.9345)*sin(psi) #still need to figure out where these
-                          #constant come from (physics, units issue)
+#constant come from (physics, units issue)
 
 #left figure (first of 200 simulated drifters)
 sim1Fit <- fitModel(vel1, CF = f0, DELTA, 1.5*f0/pi, 1.5*f0/pi, quantSet = .9)  #fit model
@@ -155,19 +161,24 @@ sBarMat[,1] <- 10*log10(sBar)
 sZMat[,1] <- sim1Per$sZ
 
 #Loop through and fit other 199 simulations 
-for (i in 2:nSim) {
+#run only once (this is slow)
+#for (i in 2:nSim) {
   #fit each of the 200 simulations
-  tempFit <- fitModel(vel[,i], CF = f0, DELTA, 1.5*f0/pi, 1.5*f0/pi, quantSet = .9)  #fit model
-  tempPer <- getPerio(vel[,i], delta = DELTA, dB = TRUE, noZero = FALSE) #periodogram
-  N <- length(vel[,i])
+#  tempFit <- fitModel(vel[,i], CF = f0, DELTA, 1.5*f0/pi, 1.5*f0/pi, quantSet = .9)  #fit model
+#  tempPer <- getPerio(vel[,i], delta = DELTA, dB = TRUE, noZero = FALSE) #periodogram
+#  N <- length(vel[,i])
   #plot spectrum and model fit 
-  sTau <- ouAc(tempFit$A, tempFit$w0, tempFit$C, N) + maternAc(tempFit$B, tempFit$alpha, tempFit$h, N)  
-  tau <- seq(0, N - 1)
-  sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
-  sBarMat[,i] <- 10*log10(sBar)
-  sZMat[,i] <- tempPer$sZ
-  print(i)
-}
+#  sTau <- ouAc(tempFit$A, tempFit$w0, tempFit$C, N) + maternAc(tempFit$B, tempFit$alpha, tempFit$h, N)  
+#  tau <- seq(0, N - 1)
+#  sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+#  sBarMat[,i] <- 10*log10(sBar)
+#  sZMat[,i] <- tempPer$sZ
+#  print(i)
+#}
+#save(sZMat, file = '/users/hdirector/Documents/prelim/prelim/Code/sZMat.rda')
+#save(sBarMat, file = '/users/hdirector/Documents/prelim/prelim/Code/sBarMat.rda')
+
+load('/users/hdirector/Documents/prelim/prelim/Code/sZMat.rda')
 
 #plot first periodogram make initial plot
 plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "lightgrey",
@@ -195,10 +206,10 @@ points(DELTA*sim1Per$omega[sim1Fit$firstIndex:sim1Fit$lastIndex],
 #12 measurements per day
 drifterulysses <- readMat("/users/hdirector/Documents/prelim/prelim/Code/drifterulysses.mat")
 driftUlys <- list("num" = as.vector(drifterulysses$drifterulysses[,,1]$num),
-              "lat" = as.vector(drifterulysses$drifterulysses[,,1]$lat),
-              "lon" = as.vector(drifterulysses$drifterulysses[,,1]$lon),
-              "cv" = as.vector(drifterulysses$drifterulysses[,,1]$cv),
-              "f" = as.vector(drifterulysses$drifterulysses[,,1]$f))
+                  "lat" = as.vector(drifterulysses$drifterulysses[,,1]$lat),
+                  "lon" = as.vector(drifterulysses$drifterulysses[,,1]$lon),
+                  "cv" = as.vector(drifterulysses$drifterulysses[,,1]$cv),
+                  "f" = as.vector(drifterulysses$drifterulysses[,,1]$f))
 DELTA <- 2
 
 par(mfrow = c(1, 2))
@@ -225,7 +236,7 @@ points(DELTA*samp$omega[sampFit$firstIndex:sampFit$lastIndex], 10*log10(sBar)[sa
        col = "green", type = "l", lwd = 3)
 abline(v = CF, lwd = 3) #inertial frequency
 
-#Figures 7-10
+#Figures 7, 8, 10
 #constants
 CF <- max(4*pi*(driftUlys$f)) #positive because of southern hemisphere, why at max not mean
 N <- length(driftUlys$num)
@@ -246,7 +257,7 @@ lastIndex <- toStartFit$lastIndex
 nOmega <-length(firstIndex:lastIndex)
 sZMat <- matrix(ncol = nOmega, nrow = N - 499*2)
 
-#rolling window CF (taking the max)
+#rolling window CF (taking the mean over the interval)
 CFVec <- rep(NA, N - 499*2)
 for (i in 500:(N - 499)) {
   CFVec[i - 499] <- mean(4*pi*(driftUlys$f[(i - 499):(i + 499)])) #positive because of southern hemisphere, why at max not mean
@@ -264,68 +275,110 @@ colnames(par6Val) <- c("A", "B", "w0", "C", "h", "alpha")
 par6LB <- par6UB <- par6Val
 par6Val[1, ] <- c(toStartFit$A, toStartFit$B, toStartFit$w0,
                   toStartFit$C, toStartFit$h, toStartFit$alpha)
+llVal6 <- rep(NA, N - 499*2)
+llVal6 <- toStartFit$llVal
+
 #Confidence interval for first time point
 step <- qnorm(.975)*sqrt(diag(solve(toStartFit$hess))/nWin)
 par6LB[1, ] <- par6Val[1, ] - step; par6UB[1, ] <- par6Val[1, ] + step
 
+
 #Loop through all time points and calc par estimate and CI
-for (i in 501:(N - 499)) {
-  currCv <- driftUlys$cv[(i - 499):(i + 499)] 
+#for (i in 501:(N - 499)) {
+#  currCv <- driftUlys$cv[(i - 499):(i + 499)] 
+#  CFCurr <- CFVec[i - 499]
   #fit parameters, initialize estimates at value used in last run
-  tempFit <- fitModel(currCv, CF, DELTA, fracNeg = 0, fracPos = fracPos,
-                  quantSet = .5, needInits = FALSE, parInit = par6[i - 499 - 1, ],
-                  hess = TRUE)
-  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
-                    tempFit$C, tempFit$h, tempFit$alpha)
+#  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+#                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
+#                      hess = TRUE)
+#  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
+#                          tempFit$C, tempFit$h, tempFit$alpha)
+#  llVal6[i - 499] <-  tempFit$llVal
   #calculate confidence interval via Fisher's information
-  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess))/nWin)
-  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
-  print(i)
-}
+#  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess))/nWin)
+#  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
+#  print(i)
+#}
+
+save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+
+load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
 
 #plot observed periodogram
 par(mfrow = c(2, 1))
+library("fields")
 image.plot((500:(N - 499))/12, 2*toStartPer$omega[firstIndex:lastIndex],
            sZMat, useRaster = TRUE, zlim = c(20, 60),
            ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
            xlab = "Day")
-points((500:(N - 499))/12, CFVec, col = "white", lwd = .01)
-mtext("Replication of Figure 7", outer = T, line = -3)
+points((500:(N - 499))/12, CFVec, col = "white", lwd = 0.2)
+mtext("Replication of Figure 7", outer = T, line = -1.5)
 
 #find and plot fitted periodogram
-sZMatObsa <- matrix(ncol = nOmega, nrow = N - 499*2)
+sZMatObs <- matrix(ncol = nOmega, nrow = N - 499*2)
 for (i in 1:(N - 499*2)) {
-  sTau <- (ouAc(parVal[i, "A"], parVal[i, "w0"], parVal[i, "C"], nWin) +
-                 maternAc(parVal[i, "B"], parVal[i, "alpha"], parVal[i, "h"], nWin))  
+  sTau <- (ouAc(par6Val[i, "A"], par6Val[i, "w0"], par6Val[i, "C"], nWin) +
+             maternAc(par6Val[i, "B"], par6Val[i, "alpha"], par6Val[i, "h"], nWin))  
   tau <- seq(0, nWin - 1)
   sBar <- 2*fft(sTau*(1 - (tau/nWin))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
   sZMatObs[i, ] <- 10*log10(sBar)[toStartFit$firstIndex:toStartFit$lastIndex]
 }
 
+image.plot((500:(N - 499))/12, 2*toStartPer$omega[firstIndex:lastIndex],
+           sZMatObs, useRaster = TRUE, zlim = c(20, 60),
+           ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
+           xlab = "Day")
+points((500:(N - 499))/12, CFVec, col = "white", lwd = 0.5)
+
 #Figure 8 parameter estimates over times
-par(mfrow = c(1, 1))
-plot((500:(N - 499))/12, par6[,"w0"], ylim = c(.43, .67), type = "l", 
+#To-Do: figure out confidence bands
+par(mfrow = c(4, 1))
+plot((500:(N - 499))/12, par6Val[,"w0"], ylim = c(.43, .67), type = "l", 
      xlab = "Day", ylab = "Inertial Frequencies", col = "blue")
-polygon(c(rev((500:(N - 499))/12), (500:(N - 499))/12), border = NA,
-        c(rev(par6UB[, "w0"]), par6LB[, "w0"]), col = "lavender")
-mtext("Replication of Figure 8", outer = T, line = -3)
+mtext("Replication of Figure 8", outer = T, line = -2)
 points((500:(N - 499))/12, CFVec, col = "red", type ="l")
-plot((500:(N - 499))/12, par6[, "A"], ylim = c(0, 27), type = "l",
+plot((500:(N - 499))/12, par6Val[, "A"], ylim = c(0, 27), type = "l",
      xlab = "Day", ylab  = "Amplitudes", col = "blue")
-polygon(c(rev((500:(N - 499))/12), (500:(N - 499))/12),  border = NA,
-        c(rev(par6UB[, "A"]), par6LB[, "A"]), col = "lavender")
-points((500:(N - 499))/12, par6[, "B"], col = "red", type = "l")
-polygon(c(rev((500:(N - 499))/12)[1:500], (500:(N - 499))/12)[1:500],  border = NA,
-        c(rev(par6LB[, "B"])[1:500], par6UB[, "B"])[1:500], col = "pink")
-plot((500:(N - 499))/12, par6[, "C"], ylim = c(0, 0.2), type = "l",
+points((500:(N - 499))/12, par6Val[, "B"], col = "red", type = "l")
+plot((500:(N - 499))/12, par6Val[, "C"], ylim = c(0, 0.2), type = "l",
      xlab = "Day", ylab = "Dampening", col = "blue")
-points((500:(N - 499))/12, par6[, "h"], col = "red", type = "l")
-plot((500:(N - 499))/12, par6[, "alpha"], ylim = c(0.58, 1.45), type = "l",
+points((500:(N - 499))/12, par6Val[, "h"], col = "red", type = "l")
+plot((500:(N - 499))/12, par6Val[, "alpha"], ylim = c(0.58, 1.45), type = "l",
      xlab = "Day", ylab = "Slope Parameter", col = "blue")
-
-
 
 ##Figure 9
 #storage vectors for 5 parameter model
+N <- length(driftUlys$num)
 par5 <- matrix(nrow = N - 499*2, ncol = 5)
-colnames(par5) <- c("A", "B", "w0", "C", "h", "alpha")
+colnames(par5) <- c("A", "B", "C", "h", "alpha")
+
+#storage vectors for parameters, CI Bounds, hessian, and log likelihood values
+par5Val <- matrix(nrow = N - 499*2, ncol = 5)
+colnames(par5Val) <- c("A", "B", "C", "h", "alpha")
+toStartFit <- fitModel(driftUlys$cv[1:999], CF, DELTA, fracNeg = 0, fracPos = fracPos,
+                       quantSet = .5,  parInit = par5Val[i - 499 - 1, ], simpModel = TRUE)
+par5Val[1, ] <- c(toStartFit$A, toStartFit$B, 
+                  toStartFit$C, toStartFit$h, toStartFit$alpha)
+llVal5 <- rep(NA, N - 499*2)
+llVal5[1] <- toStartFit$llVal
+
+#Loop through all time points fitting model and storing likelihood value
+#Slow to run, only run once
+for (i in 501:(N - 499)) {
+  currCv <- driftUlys[(i - 499):(i + 499)]$cv 
+#fit parameters, initialize estimates at value used in last run
+  tempFit <- fitModel(currCv, CF, DELTA, fracNeg = 0, fracPos = fracPos, needInits = FALSE,
+                      quantSet = .5,  parInit = par5Val[i - 499 - 1, ], simpModel = TRUE)
+  par5Val[i - 499, ] <- c(tempFit$A, tempFit$B, 
+                          tempFit$C, tempFit$h, tempFit$alpha)
+  print(i)
+}
+save(par5Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par5Val.rda')
+
+load('/users/hdirector/Documents/prelim/prelim/Code/par5Val.rda')
