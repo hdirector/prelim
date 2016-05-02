@@ -23,12 +23,12 @@ bStartTs <- 2971; bEndTs <-3570 #index of 50 day period in blue is obtained from
 gStartTs <- 4201; gEndTs <- 4800 #index of 50 day period in blue is obtained from Sykulski et al posted Matlab code
 
 #plot time series, coloring particular sections 
-pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig1.pdf')
+#pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig1.pdf')
 plot(drift$lon[startTs:endTs], drift$lat[startTs:endTs], type = "l", 
      xlab = "Longitude", ylab = "Latitude", main = "Replication of Figure 1 (Right)")
 points(drift$lon[gStartTs:gEndTs], drift$lat[gStartTs:gEndTs], type = "l", col = "green")
 points(drift$lon[bStartTs:bEndTs], drift$lat[bStartTs:bEndTs], type = "l", col = "blue")
-dev.off()
+#dev.off()
 
 ###Figure 2###
 
@@ -51,7 +51,7 @@ gCf <- mean(-4*pi*drift$f[gStartTs:gEndTs])
 bCf <- mean(-4*pi*drift$f[bStartTs:gStartTs])
 
 #plot figure
-pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig2.pdf')
+#pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig2.pdf')
 par(mfrow = c(1, 2))
 plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
@@ -60,12 +60,13 @@ plot(DELTA*green$omega, green$sZ, type = "l", col = "green", xlab = expression(p
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
 mtext("Replication of Figure 2", outer = T, line = -3)
 abline(v = gCf, col = "red")
-dev.off()
+#dev.off()
 
 ###Figure 3
 ###TO DO: How did they come up with these variance (autocorrelation at 0)?
 
 #sample matern
+set.seed(103)
 N <- 1000
 DELTA <- 2
 matSamp <- simMatern(B = 10, alpha  = 0.9, h = 0.1, N = N, delta = DELTA)
@@ -77,6 +78,7 @@ fbmSamp <- simFBM(B = 10, alpha  = 0.9, H = 0.1, N = N)
 fbm <- getPerio(fbmSamp, delta = DELTA)
 
 #plot figure
+#pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig3.pdf')
 layout(matrix(c(1, 2, 3, 3), 2, 2, byrow = TRUE))
 plot(fbmSamp[,"u"], col = "blue", xlim = c(0, 1000), ylim = c(-200, 200),
      type = "l", xlab = expression(paste(t, Delta)), ylab = "u (cm/s)")
@@ -89,12 +91,14 @@ points(matSamp, col = "red", type = "l")
 plot(DELTA*fbm$omega, fbm$sZ, col = "blue", ylim = c(-20, 80), xlim = c(-pi, pi),
      type = "l", xlab = expression(paste(omega, Delta)), ylab = "dB")
 points(DELTA*mat$omega, mat$sZ, col = "red", type = "l")
+#dev.off()
 
 ###Figure 4
 CF <- mean(-4*pi*(drift$f[2971:3570]))
 N <- length(bZ)
 #Fit and plot blue time series
 bFit <- fitModel(bZ, CF, delta = 2, fracNeg = 0.4, fracPos = 0, quantSet = .5)
+#pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig4.pdf')
 par(mfrow = c(1,2))
 plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
@@ -121,6 +125,7 @@ points(DELTA*green$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd 
 points(DELTA*blue$omega[bFit$firstIndex:bFit$lastIndex], 10*log10(sBar)[bFit$firstIndex:bFit$lastIndex], 
        col = "blue", type = "l", lwd = 3)
 abline(v = CF, lwd = 3) #inertial frequency
+#dev.off()
 
 ###Figure 5
 newinertial <- readMat("/users/hdirector/Documents/prelim/prelim/Code/newInertial.mat")
@@ -139,6 +144,7 @@ f0  <- -(8*pi/23.9345)*sin(psi) #still need to figure out where these
 sim1Fit <- fitModel(vel1, CF = f0, DELTA, 1.5*f0/pi, 1.5*f0/pi, quantSet = .9)  #fit model
 sim1Per <- getPerio(vel1, delta = DELTA, dB = TRUE, noZero = FALSE) #periodogram
 N <- length(vel1)
+png('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig5.png')
 par(mfrow = c(1, 2))
 plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "blue",
      ylim = c(-40, 60), xlim = c(-pi, pi), ylab = "dB",
@@ -179,6 +185,7 @@ sZMat[,1] <- sim1Per$sZ
 #save(sBarMat, file = '/users/hdirector/Documents/prelim/prelim/Code/sBarMat.rda')
 
 load('/users/hdirector/Documents/prelim/prelim/Code/sZMat.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/sBarMat.rda')
 
 #plot first periodogram make initial plot
 plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "lightgrey",
@@ -201,6 +208,7 @@ points(DELTA*sim1Per$omega, meanEnsemSz, col = "blue", type = "l")
 points(DELTA*sim1Per$omega, meanEnsemSBar, col = "red", lty = 3, type = "l", lwd = 3)
 points(DELTA*sim1Per$omega[sim1Fit$firstIndex:sim1Fit$lastIndex],
        meanEnsemSBar[sim1Fit$firstIndex:sim1Fit$lastIndex], col = "green", type = "l", lwd = 3)
+dev.off()
 
 ###Figure 6
 #12 measurements per day
@@ -212,6 +220,7 @@ driftUlys <- list("num" = as.vector(drifterulysses$drifterulysses[,,1]$num),
                   "f" = as.vector(drifterulysses$drifterulysses[,,1]$f))
 DELTA <- 2
 
+pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig6.pdf')
 par(mfrow = c(1, 2))
 plot(driftUlys$lon, driftUlys$lat, type = "l", col = "blue", xlim = c(-120, -80),
      ylim = c(-40, -20), xlab = "Longitude", ylab = "Latitude") 
@@ -235,6 +244,7 @@ points(DELTA*samp$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd =
 points(DELTA*samp$omega[sampFit$firstIndex:sampFit$lastIndex], 10*log10(sBar)[sampFit$firstIndex:sampFit$lastIndex], 
        col = "green", type = "l", lwd = 3)
 abline(v = CF, lwd = 3) #inertial frequency
+dev.off()
 
 #Figures 7, 8, 10
 #constants
@@ -300,10 +310,10 @@ par6LB[1, ] <- par6Val[1, ] - step; par6UB[1, ] <- par6Val[1, ] + step
 #  print(i)
 #}
 
-save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+#save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+#save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+#save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+#save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
 
 load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
 load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
@@ -311,6 +321,7 @@ load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
 load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
 
 #plot observed periodogram
+#png('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig7.png')
 par(mfrow = c(2, 1))
 library("fields")
 image.plot((500:(N - 499))/12, 2*toStartPer$omega[firstIndex:lastIndex],
@@ -335,9 +346,11 @@ image.plot((500:(N - 499))/12, 2*toStartPer$omega[firstIndex:lastIndex],
            ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
            xlab = "Day")
 points((500:(N - 499))/12, CFVec, col = "white", lwd = 0.5)
+#dev.off()
 
 #Figure 8 parameter estimates over times
 #To-Do: figure out confidence bands
+#pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig8.pdf')
 par(mfrow = c(4, 1))
 plot((500:(N - 499))/12, par6Val[,"w0"], ylim = c(.43, .67), type = "l", 
      xlab = "Day", ylab = "Inertial Frequencies", col = "blue")
@@ -351,6 +364,7 @@ plot((500:(N - 499))/12, par6Val[, "C"], ylim = c(0, 0.2), type = "l",
 points((500:(N - 499))/12, par6Val[, "h"], col = "red", type = "l")
 plot((500:(N - 499))/12, par6Val[, "alpha"], ylim = c(0.58, 1.45), type = "l",
      xlab = "Day", ylab = "Slope Parameter", col = "blue")
+#dev.off()
 
 ##Figure 9
 #storage vectors for 5 parameter model
