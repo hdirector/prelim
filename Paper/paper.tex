@@ -44,7 +44,7 @@ x(t) \overset{ms}{=} \int_{-\infty}^{\infty} f_{x}(\omega)e^{i\omega t}d\omega &
 
 
 \begin{equation}
-S_{x}(\omega) = \underset{T \rightarrow \infty}{lim} \mathbb{E} \left(\frac{1}{2T} \left| \int_{-T}^{T} x(t) e^{-i \omega t}dt \right|^{2} \right),
+S_{x}(\omega) = \underset{T \rightarrow \infty}{\lim} \mathbb{E} \left(\frac{1}{2T} \left| \int_{-T}^{T} x(t) e^{-i \omega t}dt \right|^{2} \right),
 \end{equation}
 is often employed. This quantity represents the variance (or power) associated with each frequency \citep{Percival1993}. Power spectral densities are useful for statistical modeling, since they can be related to the autocovariance sequence of a time series using  Fourier transformation.  Defining the autocovariance as $s_{x}(\tau) = \mathbb{E}[x(t) x(t - \tau)] $ where $\tau$ is the time lag, we have
 
@@ -59,32 +59,59 @@ J_{x}(\omega) = \sqrt{\frac{t}{N}} \sum_{t=1}^{N} x(t) e^{-i \omega t}
 \citep{Sykulski2013}. Although intuitively appealing, this estimator has known problems that stem from the sampling of a periodic function at discrete intervals. In particular,  high frequencies can  capture periodic behavior of other lower frequencies if that happen to align in period. Additionally, frequencies above the highest observable frequency cannot be captured, and, are instead, recorded as other frequencies in the spectrum.  These effects, referred to as $\textbf{\it{aliasing}}$ and $\textbf{\it{leakage}}$ respectively,  are typically reduced by $\textbf{\it{tapering}}$. This method uses  a window of frequencies for estimation rather than a single value. However, depending on how tapering is used, it can introduce its own  biases in estimation.  
 
 
-%\subsection{Model}
-%\subsubsection{Inertial oscillations}
+\subsection{Model}
+ To model the drifter's motion over time, the eastward and northward components of the drifter's velocity, denoted $u(t)$ and $v(t)$ respectively, are converted to a complex-valued velocity, $z(t) = u(t) + iv(t)$. Stochastic models are then developed for both components of the the drifter's behavior, inertial oscillations and movement due to the ocean's turbulent background,  in the spectral domain. Finally, the two components of the model are added together, creating a six-parameter model, which is fit via maximizing a blurred Whittle likelihood, a relatively new approximation to the true spectral likelihood that balances computational efficiency with minimizing bias \citep{Sykulski2013}. 
+ 
+\subsubsection{Inertial oscillations}
+We discuss modeling just the inertial oscillations first. In a deterministic setting, inertial oscillations are often modeled with the following set of coupled differential equations \citep{Pollard1970}
+\begin{align}
+\frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu \\ \nonumber
+\frac{\partial v}{\partial t} - f_{0}u &= G - cv
+\end{align}
+where $u$ and $v$ again represent eastward and northward velocities, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind. Suppressing the dependence on $t$ and using the complex representation of the velocity, these relationships can be equivalently expressed as follows
+\begin{align*}
+\label{eq: diffEqDeriv}
+\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}\\
+dz &= (F - c u- f_{0}v)dt + (iG - icv + if_{0}u)dt\\
+&= fo(-v + iu)dt - c(u + iv)dt + (F + iG)dt\\
+&= if_{0}(u + iv) - c(u + iv) + (F + iG)\\
+&= (if_{0} - c)z dt + (F + iG)dt. 
+\end{align*}
+By further replacing the wind forcing term, $(F + iG)dt$, with complex-valued Brownian increments, \citet{Sykulski2016} obtain the stochastic model 
+\begin{equation}
+\label{eq: ouEq}
+dz(t) = (i f_{0} -c) z(t) dt + A d Q(t), 
+\end{equation}
+which defines equivalent behavior to the accepted deterministic formulation. Equation ~\ref{eq: ouEq}  is known as the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation. It developed from brownian motion to OU to complex OU, mean-reversion, dampening and is a valid in this context by  blah (look up and cite the Mandelrot and Van Ness justification) giving the This model is always Markovian. The OU model is stationary assuming the initial conditions of the stochastic differential equation are set as $z(t_{0}) \sim N(0, A^{2}/2|c|)$, and, if not, will revert to the stationary model quickly as the influence of the initial conditions decays exponentially (WHY? look this up). 
 
-%Inertial oscillations are often modeled with the following set of deterministic differential equations \citep{Pollard1970}
-%\begin{align}
-%\frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu \\ \nonumber
-%\frac{\partial v}{\partial t} - f_{0}u &= G - cv
-%\end{align}
-%where $u$ and $v$ represent the vertical and horizontal velocity, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind. \citet{Sykulski2016} propose instead using a a complex-valued representation of the velocity, $z(t) = u(t) + i v(t)$,  from which we obtain 
-%\begin{align*}
-%\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}\\
-%dz &= (F - c u- f_{0}v)dt + (iG - icv + if_{0}u)dt\\
-%&= fo(-v + iu)dt - c(u + iv)dt + (F + iG)dt\\
-%&= if_{0}(u + iv) - c(u + iv) + (F + iG)\\
-%dz(t) &= (if_{0} - c)z dt + (F + iG)dt. 
-%\end{align*}
-%We further replace the wind forcing term, $(F + iG)dt$, with complex-valued Brownian increments, which is justified by blah (look up and cite the Mandelrot and Van Ness justification). Thus, we have a stochastic model which retains the desired relationship between the horizontal and vertical velocity components. \citet{Sykulski2016} further let $f_{0}$ be a free parameter, $\omega_{0}$, giving the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation.
-%\begin{equation}
-%dz(t) = (i \omega -c) z(t) dt + A d Q(t), 
-%\end{equation}
-%Letting $\omega_{0}$ be estimated by data, rather than fixed at the inertial frequency allows for identification and estimation of the shifts in the angular frequency due to eddies. If the observed angular frequency differs from the inertial frequency, the angular frequency of the eddy can be calculated as $\omega_{eddy} = f_{0} - \omega_{0}$, since $\omega_{0}$ is a sum of the inertial and eddy frequencies.
+\citet{Sykulski2016} further let $f_{0}$ be a free parameter, denoted $\omega_{0}$, to be estimated by data. In so doing, they enable  identification and estimation of the shifts in the angular frequency due to eddies. If the estimated angular frequency differs from the inertial frequency, the angular frequency of the eddy can be calculated as $\omega_{eddy} = f_{0} - \omega_{0}$, since $\omega_{0}$ is a sum of the inertial and eddy frequencies.
 
-%The complex OU process has 
+Letting $z^{*}(t)$ represent the complex conjugate of z(t) and using the previously-specified initial conditions, the complex OU process has the following  autocovariance  and power spectral density
+\begin{align}
+\label{eq: ouAC}
+s^{(0)}(\tau) &= \mathbb{E}\{z(t)z^{*}(t + \tau) \} = \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|)\\
+\label{eq: ouPSD}
+S^{(0)}(\omega) &= \int_{-\infty}^{\infty} s^{(0)}(\tau) \exp (-i \omega \tau) d \tau = \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}}
+\end{align}
+where $\tau$ is a time lag and the $(o)$ subscripts denotes that these equations are for the OU component of the model.  In addition to the inertial frequency, $\omega_{0}$, the parameter, $A > 0$ that defines the variability, and the parameter, $c >0$ which controls the dampening,  need to be fit from data. 
+\subsubsection{Turbulent Background}
+The drifters' time series are also marked by large-scale turbulence (read and cite Rhines 1979). Many potential models have been considered for this background....Lit review here ... However, these models have been \textbf{\it{integer order}}, meaning the velocity, acceleration, and hyperacceleration must be Markovian, a constraint previous studies (READ AND CITE) indicate is not appropriate in all cases. Thus, the authors propose using the Mat\'{e}rn covariance structure \citep{Gneiting2012}, a model which has gained prominence in the spatial statistics literature due to its flexibility. In this context, the Mat\'{e}rn model usefully  allows for markovianity when the data supports it while not universally enforcing it. The corresponding autocovariance and power spectral density are (read and cite stein 1991 here)
 
+\begin{align}
+\label{eq: maternAC}
+s^{(m)}(\tau) &= \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\kappa_{\alpha - 1/2}(h|\tau|)\\
+\label{eq: maternPSD}
+S^{(m)}(\omega) &= \frac{B^{2}}{(\omega^{2} + h^{2})^{\alpha}}
+\end{align}
+where $\tau$ again denotes the time lag, $\Gamma(\alpha)$ is the gamma function,  $\kappa_{\eta}$ is a modified Bessel function of the second kind of order $\eta$. and the subscript $(m)$ indicates that this is the Mat\'{e}rn part of the model. The parameters to be estimated are the amplitude, $B$, the dampening, $h > 0$, and a smoothness parameter $\alpha > 1/2$. 
 
-
+\subsubsection{Overall Model}
+Combining the inertial oscillation and turbulent background parts of the model is straightforward. For both the autocovariance and power spectral densities, we can simply add the corresponding components of the inertial oscillation and turbulent background. Using Equations ~\ref{eq: ouAC} and ~\ref{eq: maternAC} and Equations ~\ref{eq: ouPSD} and ~\ref{eq: maternPSD}, we obtain,
+\begin{align}
+S(\omega; \boldsymbol{\theta}) &= \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}} + \frac{B^{2}}{(\omega^{2} + h^{2})^{\alpha}}\\
+s_{\tau}(\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|) +  \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\kappa_{\alpha - 1/2}(h|\tau|),
+\end{align}
+ the autocovariance and power spectral density respectively. 
 
 \bibliography{prelim}
 
