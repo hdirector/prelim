@@ -144,7 +144,7 @@ f0  <- -(8*pi/23.9345)*sin(psi) #still need to figure out where these
 sim1Fit <- fitModel(vel1, CF = f0, DELTA, 1.5*f0/pi, 1.5*f0/pi, quantSet = .9)  #fit model
 sim1Per <- getPerio(vel1, delta = DELTA, dB = TRUE, noZero = FALSE) #periodogram
 N <- length(vel1)
-png('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig5.png')
+#png('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig5.png')
 par(mfrow = c(1, 2))
 plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "blue",
      ylim = c(-40, 60), xlim = c(-pi, pi), ylab = "dB",
@@ -208,7 +208,7 @@ points(DELTA*sim1Per$omega, meanEnsemSz, col = "blue", type = "l")
 points(DELTA*sim1Per$omega, meanEnsemSBar, col = "red", lty = 3, type = "l", lwd = 3)
 points(DELTA*sim1Per$omega[sim1Fit$firstIndex:sim1Fit$lastIndex],
        meanEnsemSBar[sim1Fit$firstIndex:sim1Fit$lastIndex], col = "green", type = "l", lwd = 3)
-dev.off()
+#dev.off()
 
 ###Figure 6
 #12 measurements per day
@@ -220,7 +220,7 @@ driftUlys <- list("num" = as.vector(drifterulysses$drifterulysses[,,1]$num),
                   "f" = as.vector(drifterulysses$drifterulysses[,,1]$f))
 DELTA <- 2
 
-pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig6.pdf')
+#pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig6.pdf')
 par(mfrow = c(1, 2))
 plot(driftUlys$lon, driftUlys$lat, type = "l", col = "blue", xlim = c(-120, -80),
      ylim = c(-40, -20), xlab = "Longitude", ylab = "Latitude") 
@@ -244,7 +244,7 @@ points(DELTA*samp$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd =
 points(DELTA*samp$omega[sampFit$firstIndex:sampFit$lastIndex], 10*log10(sBar)[sampFit$firstIndex:sampFit$lastIndex], 
        col = "green", type = "l", lwd = 3)
 abline(v = CF, lwd = 3) #inertial frequency
-dev.off()
+#dev.off()
 
 #Figures 7, 8, 10
 #constants
@@ -366,33 +366,47 @@ plot((500:(N - 499))/12, par6Val[, "alpha"], ylim = c(0.58, 1.45), type = "l",
      xlab = "Day", ylab = "Slope Parameter", col = "blue")
 #dev.off()
 
-##Figure 9
-#storage vectors for 5 parameter model
-N <- length(driftUlys$num)
-par5 <- matrix(nrow = N - 499*2, ncol = 5)
-colnames(par5) <- c("A", "B", "C", "h", "alpha")
 
-#storage vectors for parameters, CI Bounds, hessian, and log likelihood values
+###Figure 9
+#Fraction positive
+fracPos <- 1.75*max(4*pi*driftUlys$f)/pi 
+
+#storage vectors for parameters and CI Bounds
+N <- length(driftUlys$cv)
 par5Val <- matrix(nrow = N - 499*2, ncol = 5)
 colnames(par5Val) <- c("A", "B", "C", "h", "alpha")
-toStartFit <- fitModel(driftUlys$cv[1:999], CF, DELTA, fracNeg = 0, fracPos = fracPos,
-                       quantSet = .5,  parInit = par5Val[i - 499 - 1, ], simpModel = TRUE)
-par5Val[1, ] <- c(toStartFit$A, toStartFit$B, 
-                  toStartFit$C, toStartFit$h, toStartFit$alpha)
-llVal5 <- rep(NA, N - 499*2)
-llVal5[1] <- toStartFit$llVal
-
-#Loop through all time points fitting model and storing likelihood value
-#Slow to run, only run once
-for (i in 501:(N - 499)) {
-  currCv <- driftUlys[(i - 499):(i + 499)]$cv 
+currCv <- driftUlys$cv[(500 - 499):(500 + 499)] 
 #fit parameters, initialize estimates at value used in last run
-  tempFit <- fitModel(currCv, CF, DELTA, fracNeg = 0, fracPos = fracPos, needInits = FALSE,
-                      quantSet = .5,  parInit = par5Val[i - 499 - 1, ], simpModel = TRUE)
-  par5Val[i - 499, ] <- c(tempFit$A, tempFit$B, 
-                          tempFit$C, tempFit$h, tempFit$alpha)
-  print(i)
-}
-save(par5Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par5Val.rda')
+toStartFit5 <- fitModel(currCv, CFVec[1], DELTA, fracNeg = 0, fracPos = fracPos,
+                    quantSet = .8, simpModel = TRUE)
+llVal5 <- rep(NA, N - 499*2)
+llVal5[1] <- toStartFit5$llVal
+par5Val[1, ] <- c(toStartFit5$A, toStartFit5$B, toStartFit5$C, 
+                  toStartFit5$h, toStartFit5$alpha)
 
-load('/users/hdirector/Documents/prelim/prelim/Code/par5Val.rda')
+#Loop through all time points and calc par estimate and CI
+#(only run once, this is slow)
+#for (i in 501:(N - 499*2)) {
+#  currCv <- driftUlys$cv[(i - 499):(i + 499)] 
+#  CFCurr <- CFVec[i - 499]
+  #fit parameters, initialize estimates at value used in last run
+#  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+#                      quantSet = .8, simpModel = TRUE, needInits = FALSE, parInit = par5Val[i - 499 -1, ])
+#  par5Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$C, tempFit$h, tempFit$alpha)
+  #store log likelihood value
+#  llVal5[i - 499] <-  tempFit$llVal
+#  print(i)
+#}
+
+#save(llVal5, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
+
+
+#plot LRT
+pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig9.pdf')
+par(mfrow = c(1, 1))
+#Note that we have stored the negative of the log likelihoods
+LRT <- 2*(-llVal6 -  (-llVal5))
+plot((500:(N - 499))/12, LRT, type = "l", ylim = c(0,25), col = "blue", xlab = "Day",
+     ylab = "Likelihood Ratio Test Statistic", main = "Replication of Figure 9")
+abline(h = qchisq(.95, 1), col = "red", lty = 2)
+dev.off()
