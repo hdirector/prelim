@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{uwstat518}[2011/04/16 UW Stat 518 style v0.1]
+\ProvidesClass{uwstat572}[2016/04/24 UW Stat 572 style v1.0]
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions
 \LoadClass[12pt]{article}
