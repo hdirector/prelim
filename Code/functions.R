@@ -105,15 +105,14 @@ ll <- function(theta,delta, curr, firstIndex, lastIndex, medIndex,
   return(100*log(llVal))
 }
 
-
-#Simplified Blurred Whittle likelihood (5 parameter model)
+#Simplified Blurred Whittle likelihood (fixed CF)
 llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
-               incZero = FALSE, trans = TRUE, CF) {
-  #theta = (A, B, w0,c, h, alpha) 
-  #A > 0: ou amplitude, B > 0: matern amplitude; 
+                   CF, incZero = FALSE, trans = TRUE) {
+  #theta = (A, B, c, h, alpha) 
+  #A > 0: ou amplitude, B > 0: matern amplitude;
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
   if (trans == TRUE) {
-    A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1
+    A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1; 
     C <- expm1(theta[3]) + pi*sqrt(3)/N  + 1
     h <- expm1(theta[4]) + pi*sqrt(3)/N + 1
     alpha <- expm1(theta[5]) + 0.5 + 1
@@ -135,6 +134,7 @@ llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
   return(100*log(llVal))
 }
 
+
 #Function to fit likelihood
 fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
                      needInits = TRUE, parInit = NULL, hess = FALSE, simpModel = FALSE) {
@@ -153,7 +153,7 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
   if (needInits == TRUE) {
     ####initial parameter estimates (using the well-reasoned parameters suggested in the paper's published code)
     #theta = (A, B, w0,c, h, alpha) 
-    #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
+    #A > 0: ou amplitude, B > 0: matern amplitude; 
     #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
     parInit <- rep(NA, 6) 
     parInit[3] <- CF #set w0 to coriolis freq
@@ -182,10 +182,6 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
     parInit[2] <- sqrt(max(curr$sZ)*parInit[5]); parInit[5] <- sqrt(parInit[5])
   }  
   
-  if (simpModel == TRUE) {
-    parInit <- parInit[c(1:2, 4:6)]
-  }
-  
   #Transform parameters to an unconstrained space for optimization
   if (simpModel == FALSE) {
     transParInit <- rep(NA, 6)
@@ -196,6 +192,9 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
     transParInit[5] <- log1p(parInit[5] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
     transParInit[6] <- log1p(parInit[6] - 0.5 - 1) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
   } else {
+    if (needInits == TRUE) {
+      parInit <- parInit[c(1:2, 4:6)]
+    }
     transParInit <- rep(NA, 5)
     transParInit[1] <- log1p(parInit[1] - 1) #0 < A < inf ===> -inf < log(A) < inf
     transParInit[2] <- log1p(parInit[2] - 1) #0 < B < inf ===> -inf < log(B) < inf 
