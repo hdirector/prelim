@@ -367,7 +367,7 @@ plot((500:(N - 499))/12, par6Val[, "alpha"], ylim = c(0.58, 1.45), type = "l",
 #dev.off()
 
 
-###Figure 9
+###Figure 9 ####
 #Fraction positive
 fracPos <- 1.75*max(4*pi*driftUlys$f)/pi 
 
@@ -400,8 +400,7 @@ par5Val[1, ] <- c(toStartFit5$A, toStartFit5$B, toStartFit5$C,
 
 #save(llVal5, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
 
-
-#plot LRT
+plot LRT 
 pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig9.pdf')
 par(mfrow = c(1, 1))
 #Note that we have stored the negative of the log likelihoods
