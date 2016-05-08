@@ -176,7 +176,7 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE,
     parInit[1] <- curr$sZ[maxIndex]*parInit[4]
     parInit[1] <- sqrt(parInit[1]); parInit[4] <- sqrt(parInit[4])
     
-    #Find initial guess for Matern amplitude and slope; zero in on area around turbulent background peak
+    #Find initial guess for Matern amplitude and slope. Zero in on area around turbulent background peak
     turbIndex <- c((medIndex - numTest):(medIndex - 1), (medIndex + 1):(medIndex + numTest))
     parInit[5] <- quantile(((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])), quantSet)
     parInit[2] <- sqrt(max(curr$sZ)*parInit[5]); parInit[5] <- sqrt(parInit[5])
