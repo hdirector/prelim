@@ -248,18 +248,19 @@ abline(v = CF, lwd = 3) #inertial frequency
 
 #Figures 7, 8, 10
 #constants
-CF <- max(4*pi*(driftUlys$f)) #positive because of southern hemisphere, why at max not mean
+CF <- mean(4*pi*(driftUlys$f)) #positive because of southern hemisphere
 N <- length(driftUlys$num)
 DELTA <- 2
 nWin <- 999
 
 #find region to fit model in
-fracPos <- 1.75*max(4*pi*driftUlys$f)/pi #figure out exactly the logic of this cut-off
+fracPos <- 1.75*max(4*pi*driftUlys$f)/pi 
 
 #initial periodogram and par fit (use for set up)
 toStartPer <- getPerio(driftUlys$cv[1:nWin], DELTA, dB = TRUE, noZero = TRUE) 
 toStartFit <- fitModel(driftUlys$cv[1:nWin], CF,  DELTA, fracNeg = 0, fracPos = fracPos,
-                       quantSet = 0.8, incZero = TRUE, hess = TRUE)
+                       quantSet = 0.8, incZero = TRUE, getHess = TRUE)
+step <- qnorm(.975)*sqrt(diag(solve(toStartFit$hess)))
 
 #frequencies of interest
 firstIndex <- toStartFit$firstIndex
@@ -285,40 +286,46 @@ colnames(par6Val) <- c("A", "B", "w0", "C", "h", "alpha")
 par6LB <- par6UB <- par6Val
 par6Val[1, ] <- c(toStartFit$A, toStartFit$B, toStartFit$w0,
                   toStartFit$C, toStartFit$h, toStartFit$alpha)
+par6LB[1, ] <- par6Val[1, ] - step
+par6UB[1, ] <- par6Val[1, ] + step
 llVal6 <- rep(NA, N - 499*2)
 llVal6 <- toStartFit$llVal
+hessArray <- array(dim = c(N - 499*2, 6, 6), data = NA)
+hessArray[1,,] <- toStartFit$hess
 
 #Confidence interval for first time point
 step <- qnorm(.975)*sqrt(diag(solve(toStartFit$hess))/nWin)
 par6LB[1, ] <- par6Val[1, ] - step; par6UB[1, ] <- par6Val[1, ] + step
 
-
 #Loop through all time points and calc par estimate and CI
-#for (i in 501:(N - 499)) {
-#  currCv <- driftUlys$cv[(i - 499):(i + 499)] 
-#  CFCurr <- CFVec[i - 499]
+for (i in 501:(N - 499)) {
+  currCv <- driftUlys$cv[(i - 499):(i + 499)] 
+  CFCurr <- CFVec[i - 499]
   #fit parameters, initialize estimates at value used in last run
-#  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
-#                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
-#                      hess = TRUE)
-#  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
-#                          tempFit$C, tempFit$h, tempFit$alpha)
-#  llVal6[i - 499] <-  tempFit$llVal
+  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
+                      getHess = TRUE)
+  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
+                          tempFit$C, tempFit$h, tempFit$alpha)
+  llVal6[i - 499] <-  tempFit$llVal
   #calculate confidence interval via Fisher's information
-#  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess))/nWin)
-#  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
-#  print(i)
-#}
+  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess))/nWin)
+  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
+  hessArray[i - 499,,] <- tempFit$hess
+  print(i)
+}
 
-#save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-#save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-#save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-#save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
-load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #plot observed periodogram
 #png('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig7.png')
@@ -354,11 +361,14 @@ points((500:(N - 499))/12, CFVec, col = "white", lwd = 0.5)
 par(mfrow = c(4, 1))
 plot((500:(N - 499))/12, par6Val[,"w0"], ylim = c(.43, .67), type = "l", 
      xlab = "Day", ylab = "Inertial Frequencies", col = "blue")
+points((500:(N - 499))/12, par6LB[, "w0"], type = "l", col = "green")
+points((500:(N - 499))/12, par6UB[, "w0"], type = "l", col = "green")
 mtext("Replication of Figure 8", outer = T, line = -2)
 points((500:(N - 499))/12, CFVec, col = "red", type ="l")
 plot((500:(N - 499))/12, par6Val[, "A"], ylim = c(0, 27), type = "l",
      xlab = "Day", ylab  = "Amplitudes", col = "blue")
 points((500:(N - 499))/12, par6Val[, "B"], col = "red", type = "l")
+points((500:(N - 499))/12, par6LB[, "B"], type = "l", col = "green")
 plot((500:(N - 499))/12, par6Val[, "C"], ylim = c(0, 0.2), type = "l",
      xlab = "Day", ylab = "Dampening", col = "blue")
 points((500:(N - 499))/12, par6Val[, "h"], col = "red", type = "l")
@@ -399,13 +409,14 @@ par5Val[1, ] <- c(toStartFit5$A, toStartFit5$B, toStartFit5$C,
 #}
 
 #save(llVal5, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
 
-plot LRT 
-pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig9.pdf')
+#plot LRT 
+#pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig9.pdf')
 par(mfrow = c(1, 1))
 #Note that we have stored the negative of the log likelihoods
 LRT <- 2*(-llVal6 -  (-llVal5))
 plot((500:(N - 499))/12, LRT, type = "l", ylim = c(0,25), col = "blue", xlab = "Day",
      ylab = "Likelihood Ratio Test Statistic", main = "Replication of Figure 9")
 abline(h = qchisq(.95, 1), col = "red", lty = 2)
-dev.off()
+#dev.off()
