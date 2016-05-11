@@ -169,11 +169,11 @@ sZMat[,1] <- sim1Per$sZ
 #Loop through and fit other 199 simulations 
 #run only once (this is slow)
 #for (i in 2:nSim) {
-  #fit each of the 200 simulations
+#fit each of the 200 simulations
 #  tempFit <- fitModel(vel[,i], CF = f0, DELTA, 1.5*f0/pi, 1.5*f0/pi, quantSet = .9)  #fit model
 #  tempPer <- getPerio(vel[,i], delta = DELTA, dB = TRUE, noZero = FALSE) #periodogram
 #  N <- length(vel[,i])
-  #plot spectrum and model fit 
+#plot spectrum and model fit 
 #  sTau <- ouAc(tempFit$A, tempFit$w0, tempFit$C, N) + maternAc(tempFit$B, tempFit$alpha, tempFit$h, N)  
 #  tau <- seq(0, N - 1)
 #  sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
@@ -388,7 +388,7 @@ colnames(par5Val) <- c("A", "B", "C", "h", "alpha")
 currCv <- driftUlys$cv[(500 - 499):(500 + 499)] 
 #fit parameters, initialize estimates at value used in last run
 toStartFit5 <- fitModel(currCv, CFVec[1], DELTA, fracNeg = 0, fracPos = fracPos,
-                    quantSet = .8, simpModel = TRUE)
+                        quantSet = .8, simpModel = TRUE)
 llVal5 <- rep(NA, N - 499*2)
 llVal5[1] <- toStartFit5$llVal
 par5Val[1, ] <- c(toStartFit5$A, toStartFit5$B, toStartFit5$C, 
@@ -399,11 +399,11 @@ par5Val[1, ] <- c(toStartFit5$A, toStartFit5$B, toStartFit5$C,
 #for (i in 501:(N - 499*2)) {
 #  currCv <- driftUlys$cv[(i - 499):(i + 499)] 
 #  CFCurr <- CFVec[i - 499]
-  #fit parameters, initialize estimates at value used in last run
+#fit parameters, initialize estimates at value used in last run
 #  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
 #                      quantSet = .8, simpModel = TRUE, needInits = FALSE, parInit = par5Val[i - 499 -1, ])
 #  par5Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$C, tempFit$h, tempFit$alpha)
-  #store log likelihood value
+#store log likelihood value
 #  llVal5[i - 499] <-  tempFit$llVal
 #  print(i)
 #}

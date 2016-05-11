@@ -11,3 +11,7 @@ save('/users/hdirector/Documents/prelim/prelim/Code/newinertial.mat', '-v6')
 addpath('/users/hdirector/Documents/prelim/prelim/MatlabCode/Fig6-10')
 load drifterulysses.mat
 save('/users/hdirector/Documents/prelim/prelim/Code/drifterulysses.mat', '-v6')
+
+addpath('/users/hdirector/Documents/prelim/prelim/MatlabCode/Fig6-10')
+load Ulysses6p.mat
+save('/users/hdirector/Documents/prelim/prelim/Code/Ulysses6p.mat', '-v6')

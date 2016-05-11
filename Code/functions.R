@@ -29,7 +29,7 @@ maternAc <- function(B, alpha, h, N, delta) {
   ac <- rep(NA, N)
   ac[1] <- ((B^2)*beta(0.5, alpha - 0.5))/(2*pi*abs(h)^(2*alpha  - 1)) #variance (cov at lag 0) 
   tau <- 1:(N - 1) #lags 
-  ac[2:N] <- ((B^2*(abs(h)*tau)^(alpha - 0.5)*besselK(abs(h)*tau, alpha - 0.5))/
+  ac[2:N] <- ((B^2*(abs(h)*delta*tau)^(alpha - 0.5)*besselK(abs(h)*delta*tau, alpha - 0.5))/
                 (2^(alpha - 1/2)*pi^(1/2)*exp(lgamma(alpha))*abs(h)^(2*alpha  - 1))) 
   return(ac)
 }
@@ -38,7 +38,7 @@ maternAc <- function(B, alpha, h, N, delta) {
 ouAc <- function(A, w0, C, N, delta) {
   ac <- rep(NA, N)
   tau <- 0:(N - 1) #lags 
-  ac <- (0i + A^2/abs(2*C))*exp(1i*w0*tau)*exp(0i + -abs(C)*tau)
+  ac <- (0i + A^2/abs(2*C))*exp(1i*w0*delta*tau)*exp(0i + -abs(C*delta*tau)
   return(ac)
 }
 
@@ -209,20 +209,20 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37)
   
   if (simpModel == FALSE) {
-  opt <- optim(transParInit, ll, delta = delta, curr = curr, 
-               firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
-               control = list(maxit = 1000000000, reltol=1e-1000))
+    opt <- optim(transParInit, ll, delta = delta, curr = curr, 
+                 firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
+                 control = list(maxit = 1000000000, reltol=1e-1000))
   } else {
-  opt <- optim(transParInit, llSimp, delta = delta, curr = curr, 
-          firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
-          medIndex = medIndex, 
-          control = list(maxit = 1000000000, reltol=1e-1000))
+    opt <- optim(transParInit, llSimp, delta = delta, curr = curr, 
+                 firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
+                 medIndex = medIndex, 
+                 control = list(maxit = 1000000000, reltol=1e-1000))
   }
   llVal <- exp(opt$val/100)
   
   if (simpModel == FALSE) {
     fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1 , opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N + 1, 
-            expm1(opt$par[5]) + pi*sqrt(3)/N + 1, expm1(opt$par[6]) + 0.5 + 1)
+              expm1(opt$par[5]) + pi*sqrt(3)/N + 1, expm1(opt$par[6]) + 0.5 + 1)
   } else {
     fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1, expm1(opt$par[3]) + pi*sqrt(3)/N + 1, 
               expm1(opt$par[4]) + pi*sqrt(3)/N + 1, expm1(opt$par[5]) + 0.5 + 1)
@@ -237,7 +237,7 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
     #hess <- temp$hessian
     library("numDeriv")
     hess <- hessian(ll, fin, delta = delta, curr = curr, trans = FALSE,
-            firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex)
+                    firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex)
   } 
   
   #Return results

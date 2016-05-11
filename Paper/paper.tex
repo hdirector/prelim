@@ -25,13 +25,13 @@
 
 
 
-%\begin{abstract}
-%  Put your project summary here.
-%\end{abstract}
+\begin{abstract}
+  This report reviews the spectral analysis method for modeling ocean surface drifters proposed by \citet{Sykulski2016}. Previous methods to model drifters are reviewed along with the authors' model.   Where relevant to understanding the model of \citet{Sykulski2016},  spectral analysis, Mat\'{e}rn covariances, the complex Ornstein-Uhlenbeck process, and Whittle likelihood are considered. We conclude by evaluating the strengths and weaknesses of this method. 
+  \end{abstract}
 
 \section{Introduction}
 \indent ``Lagrangian Time Series Models for Ocean Surface Drifter Trajectories," by Adam M. Sykulski, Sofia C. Olhede, Jonathan M. Lilly, and Eric Danioux presents a multi-component spectral model for analysis of data transmitted by ocean surface drifters. Drifters are free-floating  instruments that transmit their location at regular time intervals,  creating a \textbf{\it{Langrangian time series}}, or a sequence of spatial locations over time. Oceanographers use these time series to increase understanding of  ocean circulation patterns. Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical Society Series C}}, this paper develops a model that can isolate a scientific quantity of interest,  and, in so doing, introduces several new statistical techniques.\\
-\indent The motion of parcels of water moving over changing latitudes is known to have a rotational component. Because the Earth has  different diameter at different latitudes, the speed of objects moving with Earth's rotation varies across latitudes.  This induces a phenomena known as the Coriolis Effect, whereby very fast moving objects or objects being observed over long periods, such as drifters, end up moving at speeds that are different than the Earth beneath them as they change latitude. Viewed from a stationary reference frame, this creates circular motions, or inertial oscillations. These motions have known frequencies, referred to as inertial frequencies. Oceanographers  are interested in detecting deviations from these frequencies, as they are thought to indicate eddies, or persistent circular wave patterns \citep{Kunze1985}. However, the ocean has a constant turbulent background flow which makes identifying eddies in real data difficult \citep{ Elipot2010}. The methods in this paper overcome this challenge and successfully find shifts in the inertial frequency with a spectral time series model. \\
+\indent The motion of parcels of water moving over changing latitudes is known to have a rotational component. Because the Earth has  different diameter at different latitudes, the speed of objects moving with Earth's rotation varies across latitudes.  This induces a phenomena known as the Coriolis Effect, whereby very fast moving objects or objects being observed over long periods, such as drifters, end up moving at speeds that are different than the Earth beneath them as they change latitude. Viewed from a stationary reference frame, this creates circular motions, or inertial oscillations. These motions have known frequencies, referred to as inertial frequencies. Oceanographers  are interested in detecting deviations from these frequencies, as they are thought to indicate eddies, or persistent circular wave patterns \citep{Kunze1985}. However, the ocean has a constant turbulent background flow which makes identifying eddies in real data difficult \citep{ Elipot2010}. Previous methods to model drifters are BLAH The methods in this paper overcome this challenge and successfully find shifts in the inertial frequency with a spectral time series model. \\
 \indent In achieving this result, several statistical advances are made.  The authors introduce an additive spectral domain model that has components corresponding to both the turbulent background and the inertial oscillations. For the turbulent background model, the Mat\'{e}rn covariance commonly used in spatial statistics \citep{Gneiting2012} is extended to the time-series context. This allows for a more flexible model for background behavior than previously obtained.  Inertial oscillations are modeled with a complex Ornstein-Uhlenbeck (OU) \citep{Arato1962, Jeffreys1968}, which provides a stochastic equivalent to an accepted set of coupled differential equations describing inertial oscillations. Further statistical innovation is employed in fitting the model with a variation on standard Whittle likelihood to reduce bias and in allowing for non-stationarity through time-varying parameter estimates. \\
 \indent The remainder of this review proceeds as follows. After a succint review of spectral analysis, Section 2 discusses the model for the drifters and the methods used to fit it. Section 3 presents the paper's results including analysis of a long time series with time-varying parameters and an application from a simulated model. The paper concludes with a discussion of the value and limitations of the approach taken by \citet{Sykulski2016}. 
 \section{Methods}
@@ -61,15 +61,15 @@ J_{x}(\omega) = \sqrt{\frac{t}{N}} \sum_{t=1}^{N} x(t) e^{-i \omega t}
 
 
 \subsection{Model}
- To model the drifter's motion over time, the eastward and northward components of the drifter's velocity, denoted $u(t)$ and $v(t)$ respectively, are converted to a complex-valued velocity, $z(t) = u(t) + iv(t)$. Stochastic models are then developed for both components of the the drifter's behavior, inertial oscillations and movement due to the ocean's turbulent background,  in the spectral domain. Finally, the two components of the model are added together, creating a six-parameter model, which is fit via maximizing a blurred Whittle likelihood, a relatively new approximation to the true spectral likelihood that balances computational efficiency with minimizing bias \citep{Sykulski2013}. 
+ To model the drifter's motion over time, the eastward and northward components of the drifter's velocity, denoted $u(t)$ and $v(t)$ respectively, are converted to a complex-valued velocity, $z(t) = u(t) + iv(t)$. Stochastic models are then developed for both components of the drifter's behavior, inertial oscillations and movement due to the ocean's turbulent background,  in the spectral domain. Finally, the two components of the model are added together, creating a six-parameter model. Parameter estimates for this model are obtained via maximizing the model's blurred Whittle likelihood. This is a relatively new approximation to the true spectral likelihood that balances computational efficiency with minimizing bias \citep{Sykulski2013}. 
  
 \subsubsection{Inertial oscillations}
-We discuss modeling just the inertial oscillations first. In a deterministic setting, inertial oscillations are often modeled with the following set of coupled differential equations \citep{Pollard1970}
+We begin by discussing the model for the inertial oscillations. In a deterministic setting, inertial oscillations are often modeled with the following set of coupled differential equations \citep{Pollard1970}
 \begin{align}
 \frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu \\ \nonumber
 \frac{\partial v}{\partial t} - f_{0}u &= G - cv
 \end{align}
-where $u$ and $v$ again represent eastward and northward velocities, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind. Suppressing the dependence on $t$ and using the complex representation of the velocity, these relationships can be equivalently expressed as follows
+where $u$ and $v$ again represent eastward and northward velocities, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind. Suppressing the dependence on $t$ and using the complex representation of the velocity, we show how these relationships can be equivalently expressed as follows
 \begin{align*}
 \label{eq:diffEqDeriv}
 \frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}\\
@@ -113,6 +113,18 @@ S(\omega; \boldsymbol{\theta}) &= \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}} + 
 s_{\tau}(\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|) +  \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\kappa_{\alpha - 1/2}(h|\tau|).
 \end{align}
 
+\subsection{Fitting the Model}
+A relatively new technique referred to as blurred Whittle likelihood is employed to fit these models. Blurred Whittle likelihood builds on Whittle likelihood, a standard approximation to the true likelihood in the time-domain which improves computation from order O to O.   Whittle likelihood is a technique developed to maximize. Unfortunately, blurred whittle likelihood shows. 
+
+
+To allow for non-stationarity, the authors propose fitting the model independently at each observed time point using a rolling window around the time point of interest.  The length of the window needs to be large enough to allow for a full sampling of the spectrum, but short enough to be treated as locally stationary.  In this analysis, the authors select  the window length empirically, but acknowledge that further work on this subject would be of value. 
+
+\citet{Sykulski2016} propose that a simple likelihood ratio test can be used at each time period to test whether or not a shift in the inertial oscillation has occurred. To do so, the authors suggest fitting a simpler model where the the parameter $\omega_{0}$ is fixed to be the inertial frequency $f$. Then this simpler model can be compared to the full six parameter model via a likelihood ratio test with test statistic
+\begin{equation}
+\label{eq: LRT}
+R(t) = 2[l_{b} \{\hat{\theta}_{1}(t) \} - l_{b}\{\hat{\theta}_{0}(t) \} ]
+\end{equation}
+where $\hat{\theta}_{0}(t)$ is the fitted parameter vector for the simpler, or null model, and $\hat{\theta}_{1}(t)$ is the fitted parameter vector for the full model. The authors claim $R(t)$ then follow a Chi-Squared distribution with 1 degree of freedom.
 
 \section{Results}
 We show the potential utility of this method by analyzing two non-trivial data sets.  First, we consider the modeled trajectories of 200 near surface particles obtained from a computer simulation of ocean circulation (Set to be `very similar' to \citet{Danioux2008} SPEM 5.2 set-up). In Figure ~\ref{fig:numSim}, we display the fit of the aggregate spectral model to a single trajectory from the simulation and to an ensemble of trajectories. The resulting spectra has peaks at zero and at the inertial frequency, which indicates that the model captures the turbulent background and the inertial oscillations, which are set not to have shifts. We also display the individual periodograms and model fits. \citet{Sykulski2016}  note that this highlights the method's robustness, since the individual periodograms show considerable variability, but the model fits are all quite consistent.
@@ -150,6 +162,9 @@ identifiability
 \subsection{Errata}
 
 \subsection{Additional Figures}
+
+\subsection{Computation}
+
 
 
 \end{document}
