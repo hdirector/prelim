@@ -26,7 +26,7 @@
 
 
 \begin{abstract}
-  This report reviews the spectral analysis method for modeling ocean surface drifters proposed by \citet{Sykulski2016}. Previous methods to model drifters are reviewed along with the authors' model.   Where relevant to understanding the model of \citet{Sykulski2016},  spectral analysis, Mat\'{e}rn covariances, the complex Ornstein-Uhlenbeck process, and Whittle likelihood are considered.  An evaluation of the strengths and weaknesses of this method concludes the review. 
+  This report reviews the spectral analysis method for modeling ocean surface drifters proposed by \citet{Sykulski2016}. Previous methods to model drifters are discussed along with the authors' model.   Where relevant to understanding the model of \citet{Sykulski2016},  spectral analysis, Mat\'{e}rn covariances, the complex Ornstein-Uhlenbeck process, and Whittle likelihood are reviewed.  To conclude the review, we evaluate the strengths and weaknesses of this method. 
   \end{abstract}
 
 \section{Introduction}
@@ -85,7 +85,7 @@ dz(t) = (i f_{0} -c) z(t) dt + A d Q(t).
 \end{equation}  
 
 
-Equation ~\ref{eq:ouEq}  is known as the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation and is also sometimes referred to as the complex-valued stationary autoregressive process. This stochastic differential equation creates a process  that is both stationary and Markovian. The parameter $f_{0}$ represents the frequency of inertial oscillations. The dampening parameter $c > 0$  guarantees that the process is mean-reverting, meaning that it will always eventually return to its mean position, $z = 0$.   The final term of the differential equation is a positive constant $A$ multiplied by $dQ(t)$.  The term $Q(t) = Q_{1}(t) + i Q_{2}(t), t \geq 0$, where $Q_{1}(t)$ and $Q_{2}(t)$ are standard Wiener processes, is a standard complex Wiener process. We remind the reader that Wiener processes are stochastic models originally used to represent the random motion of a particle. Such a process $\{Q(t, \omega): t \geq 0\}$ on the space $(\omega, Q, P)$ must satisfy
+Equation ~\ref{eq:ouEq}  is known as the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation and is also sometimes referred to as the complex-valued stationary autoregressive process. This stochastic differential equation creates a process  that is both stationary and Markovian. The parameter $f_{0}$ represents the frequency of inertial oscillations. The dampening parameter $c > 0$  guarantees that the process is mean-reverting, meaning that it will always eventually return to its mean position, $z = 0$.   The final term of the differential equation is a positive constant $A$ multiplied by $dQ(t)$.  The term $Q(t) = Q_{1}(t) + i Q_{2}(t), t \geq 0$ is a standard complex Wiener process, defined to be such that $Q_{1}(t)$ and $Q_{2}(t)$ are standard Wiener processes, . We remind the reader that Wiener processes are stochastic models originally used to represent the random motion of a particle. Such a process $\{Q(t, \omega): t \geq 0\}$ on the space $(\omega, Q, P)$ must satisfy
 \begin{enumerate}
 \item $Q(0, \omega) = 0$ almost everywhere
 \item $\{Q(t, \omega): t \geq 0\}$ is distributed normally on $(\Omega,Q, P)$
@@ -109,7 +109,9 @@ S^{(0)}(\omega) &= \int_{-\infty}^{\infty} s^{(0)}(\tau) \exp (-i \omega \tau) d
 
 
 \subsubsection{Turbulent Background}
-The drifters' time series are also marked by large-scale turbulence (see \citet{Rhines1979} for a review of the physics of this process.) Many potential models have been considered for this background, which are reviewed in \citep{Lacasce2008} ...Lit review here ... However, these models have been \textbf{\it{integer order}}, meaning the velocity, acceleration, and hyperacceleration must be Markovian, a constraint previous studies (READ AND CITE) indicate is not appropriate in all cases. Thus, the authors propose using the Mat\'{e}rn covariance structure \citep{Gneiting2012}, a model which has gained prominence in the spatial statistics literature due to its flexibility. In this context, the Mat\'{e}rn model proves to be useful, since it allows for markovianity, but does not require it.  The Mat\'{e}rn  autocovariance and power spectral density are
+The drifters' time series are also marked by the ocean's large-scale turbulence. The underlying physics describing this red noise process is summarized in \citet{Rhines1979}. Many models for ocean turbulence have been proposed, including several stochastic models \citep{Lacasce2008}. Within the oceanography literature, the stochastic models are designated  first-order \citep{Griffa1995, Falco2000}, second-order \citep{Sawford1991}, and third-order corresponding to  whether the velocity, acceleration, or hyperacceleration is modeled with a Markov process. However, calculation of the spectral slopes in observed data indicate that this class of models, referred to as \textbf{\it{integer order}},  does not always adequately reflect the ocean's behavior \citep{Rupolo1996, Sanderson1991}. Rather, \textbf{\it{fractional power models}}, such as fractional Brownian motion (FBM), would better reflect the observed behavior in some cases.
+
+Towards this end, the authors propose using a Mat\'{e}rn covariance structure \citep{Gneiting2012} for the turbulent background. The Mat\'{e}rn model has gained prominence in the spatial statistics literature due to its flexibility. In this context, the Mat\'{e}rn model proves useful, since it allows for both integer and fractional powers. The Mat\'{e}rn model is defined either by its autocovariance or power spectral density
 \begin{align}
 \label{eq:maternAC}
 s^{(m)}(\tau) &= \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\kappa_{\alpha - 1/2}(h|\tau|)\\
@@ -117,6 +119,15 @@ s^{(m)}(\tau) &= \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alp
 S^{(m)}(\omega) &= \frac{B^{2}}{(\omega^{2} + h^{2})^{\alpha}}
 \end{align}
 where $\tau$ again denotes the time lag, $\Gamma(\alpha)$ is the gamma function,  $\kappa_{\eta}$ is a modified Bessel function of the second kind of order $\eta$  and the subscript $(m)$ indicates that this is the Mat\'{e}rn part of the model \citep{Stein2012}. The parameters to be estimated are the amplitude, $B$, the dampening, $h > 0$, and a smoothness parameter $\alpha > 1/2$. 
+
+The authors emphasize that the turbulent background models previously proposed are special cases of the Mat\'{e}rn model. This means that these models can still be obtained under the current model if model fitting leads to particular parameter estimate values. They also highlight that that Mat\'{e}rn model is more appropriate than the other obvious choice of a fractional power model, FBM, since FBM does not have a bound on the velocities and tends to drift quite far from its mean. Figure ~\ref{fig: fbmMat} illustrates these differences by comparing the paths of a simulated particle obtained with a Mat\'{e}rn  covariance versus a FBM covariance. 
+
+\begin{figure}[hb]
+	\label{fig: fmbMat}
+  \centering
+    \includegraphics[width=.5\textwidth]{fig3.pdf}
+        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component the velocity; Top Right: The eastward and northward components of the vecocity; Bottom: Periodograms on the decibel scale}
+\end{figure}
 
 \subsubsection{Overall Model}
 Combining the inertial oscillation and turbulent background parts of the model is straightforward. To find both the autocovariance and power spectral densities, we can simply add the corresponding components of the inertial oscillation and turbulent background. Using Equations ~\ref{eq:ouAC} and ~\ref{eq:maternAC} and Equations ~\ref{eq:ouPSD} and ~\ref{eq:maternPSD}, we obtain
