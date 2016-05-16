@@ -31,7 +31,7 @@
 
 \section{Introduction}
 \indent ``Lagrangian Time Series Models for Ocean Surface Drifter Trajectories," by Adam M. Sykulski, Sofia C. Olhede, Jonathan M. Lilly, and Eric Danioux presents a multi-component spectral model for analysis of data transmitted by ocean surface drifters. Drifters are free-floating  instruments that transmit their location at regular time intervals,  creating a \textbf{\it{Langrangian time series}}, or a sequence of spatial locations over time. Oceanographers use these time series to increase understanding of  ocean circulation patterns. Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical Society Series C}}, this paper develops a model that can isolate a scientific quantity of interest,  and, in so doing, introduces several new statistical techniques.\\
-\indent The motion of parcels of water moving over changing latitudes is known to have a rotational component. Because the Earth has  different diameter at different latitudes, the speed of objects moving with Earth's rotation varies across latitudes.  This induces a phenomena known as the Coriolis Effect, whereby very fast moving objects or objects being observed over long periods, such as drifters, end up moving at speeds that are different than the Earth beneath them as they change latitude. Viewed from a stationary reference frame, this creates circular motions, or inertial oscillations. These motions have known frequencies, referred to as inertial frequencies. Oceanographers  are interested in detecting deviations from these frequencies, as they are thought to indicate eddies, or persistent circular wave patterns \citep{Kunze1985}. However, the ocean has a constant turbulent background flow which makes identifying eddies in real data difficult \citep{ Elipot2010}. Previous methods to model drifters are BLAH The methods in this paper overcome this challenge and successfully find shifts in the inertial frequency with a spectral time series model. \\
+\indent The motion of parcels of water moving over changing latitudes is known to have a rotational component. Because the Earth has  different diameter at different latitudes, the speed of objects moving with Earth's rotation varies across latitudes.  This induces a phenomena known as the Coriolis Effect, whereby very fast moving objects or objects being observed over long periods, such as drifters, end up moving at speeds that are different than the Earth beneath them as they change latitude. Viewed from a stationary reference frame, this creates circular motions, or inertial oscillations. These motions have known frequencies, referred to as inertial frequencies. Oceanographers  are interested in detecting deviations from these frequencies, as they are thought to indicate eddies, or persistent circular wave patterns \citep{Kunze1985}. However, the ocean has a constant turbulent background flow which makes identifying eddies in real data difficult \citep{ Elipot2010}. The methods in this paper overcome this challenge and successfully find shifts in the inertial frequency with a spectral time series model. \\
 \indent In achieving this result, several statistical advances are made.  The authors introduce an additive spectral domain model that has components corresponding to both the turbulent background and the inertial oscillations. For the turbulent background model, the Mat\'{e}rn covariance commonly used in spatial statistics \citep{Gneiting2012} is extended to the time-series context. This allows for a more flexible model for background behavior than previously obtained.  Inertial oscillations are modeled with a complex Ornstein-Uhlenbeck (OU) \citep{Arato1962, Jeffreys1968}, which provides a stochastic equivalent to an accepted set of coupled differential equations describing inertial oscillations. Further statistical innovation is employed in fitting the model with a variation on standard Whittle likelihood that reduces bias. Time-varying parameter estimates are also introduced to allow for non-stationarity.  \\
 \indent The remainder of this review proceeds as follows. After a succinct review of spectral analysis, Section 2 discusses the model for the drifters and the methods used to fit it. Section 3 presents the paper's results including analysis of a long time series with time-varying parameters and an application from a simulated model. Section 4 concludes the review with a discussion of the value and limitations of the approach taken by \citet{Sykulski2016}. 
 \section{Methods}
@@ -126,7 +126,7 @@ The authors emphasize that the turbulent background models previously proposed a
 	\label{fig: fmbMat}
   \centering
     \includegraphics[width=.5\textwidth]{fig3.pdf}
-        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component the velocity; Top Right: The eastward and northward components of the vecocity; Bottom: Periodograms on the decibel scale}
+        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale. }
 \end{figure}
 
 \subsubsection{Overall Model}
@@ -147,13 +147,13 @@ where $\theta$ are the model parameters for a particular choice of covariance st
 \begin{equation}
 |J_{Z}(\omega)| \overset{d}{\rightarrow} S_{Z}(\omega) \chi^{2}_{2}/2
 \end{equation}
-under certain regularity conditions CITE. \citet{Whittle1953} combined this result with Fourier approximations to the true covariance structure and features of Toeplitz matrices to obtain the approximate likelihood
+under certain regularity conditions \citep{Contreras2006}. \citet{Whittle1953} combined this result with Fourier approximations to the true covariance structure and features of Toeplitz matrices to obtain the approximate likelihood
 \begin{align}
 l_{\omega}(\theta) &= - \sum_{\omega \in \Omega} \left[ J_{Z}^{H}(\omega) \tilde{S}_{Z}^{-1}(\omega; \theta) J_{Z}(\omega) + \log \{S(\omega; \theta) \} \right]\\
 \label{eq: bwl}
 &= -\sum_{\omega \in \Omega} \left[ \frac{\hat{S}_{Z}(\omega)}{S(\omega;\theta)}  + \log  \{ S(\omega; \theta) \}\right]
 \end{align}
- where the subscript $w$ indicates that this is a Whittle likelihood and $H$ denotes a Hermitian matrix.  However, this likelihood relies on the periodogram and so is affected by aliasing and leakage as discussed in Section ~\ref{sec: specAnalysis}. 
+ where the subscript $w$ indicates that this is a Whittle likelihood and $H$ denotes a Hermitian matrix.  This likelihood can be evaluated in $\mathcal{O}(N log(N))$ where $N$ is the length of the time series which is a notable increase in speed compared to the $\mathcal{O}(N^{3}$  required for time-domain likelihood  \citep{Sykulski2016}. Nevertheless, this likelihood relies on the periodogram and so is affected by aliasing and leakage as discussed in Section ~\ref{sec: specAnalysis}. 
  
 To improve on these problems, \citep{Sykulski2013} propose replacing the theoretical spectrum, $S_{Z}(\omega; \theta)$ with the expected value of the spectrum, $\overline{S}_{Z}(\omega, \theta)$\begin{equation}
 \overline{S}(\omega; \theta) = \Delta \sum_{\tau = - (N - 1)}^{N-1} \left(1 - \frac{|\tau|}{N} \right)s_{\tau}(\theta) exp ( - i \omega \tau \Delta)
@@ -165,7 +165,12 @@ in Equation ~\ref{eq: bwl}. This form of the expected spectrum can be shown to b
 \begin{align}
 l_{b}(\theta) = - \sum_{\omega \in \Omega} \left[\frac{\hat{S}_{Z}(\omega)}{\overline{S}(\omega; \theta)} + \log \{ \overline{S} (\omega; \theta) \}\right]
 \end{align}
-which is maximized by standard optimization techniques.
+which is maximized by standard optimization techniques. Using asymptotic properties of the Whittle likelihood, we also have 
+\begin{equation}
+\label{eq: fisher}
+\sqrt{N}(\hat{\theta} - \theta) \overset{d}{\rightarrow} \text{ Normal($0, \mathcal{F}^{-1})$ }.
+\end{equation}
+where $\mathcal{F}$ is the Fisher information. Thus, uncertainty estimates of the parameters can easily be obtained using numerical calculations of the Hessian. 
 
 \subsubsection{Semi-parametric fitting}
 The authors note that the fitting of Equation ~\ref{eq: fullSpec} can be adapted to reflect background knowledge about the drifters such as how the physical system behaves or artifacts from interpolation. They refer to these adaptations to the model as the semi-parametric approach and highlight its use  their analyses. Specifically,  variability can be different for the eastward versus northward velocities  which creates spurious correlations between positive and negative correlations. To avoid this, the authors only fit the model using data on the positive or negative half of the spectrum corresponding to the sign of the inertial oscillation ( which is known based on the latitude of the drifter).  Similarly, sampling effects make the accuracy of high frequencies suspect, so the authors only use frequencies up to a specified threshold in fitting the model. 
@@ -191,7 +196,7 @@ Finally, \citet{Sykulski2016} propose that a simple likelihood ratio test can be
 \label{eq: LRT}
 R(t) = 2[l_{b} \{\hat{\theta}_{1}(t) \} - l_{b}\{\hat{\theta}_{0}(t) \} ]
 \end{equation}
-where $\hat{\theta}_{0}(t)$ is the fitted parameter vector for the simpler, or null model, and $\hat{\theta}_{1}(t)$ is the fitted parameter vector for the full model. The authors claim $R(t)$ then follow a Chi-Squared distribution with 1 degree of freedom.
+where $\hat{\theta}_{0}(t)$ is the fitted parameter vector for the simpler, or null model, and $\hat{\theta}_{1}(t)$ is the fitted parameter vector for the full model. The authors claim $R(t)$ then follow a Chi-squared distribution with 1 degree of freedom.
 
 \section{Results}
 We show the potential utility of this method by analyzing two non-trivial data sets.  First, we consider the modeled trajectories of 200 near surface particles obtained from a computer simulation of ocean circulation (Set to be `very similar' to \citet{Danioux2008} SPEM 5.2 set-up). In Figure ~\ref{fig:numSim}, we display the fit of the aggregate spectral model to a single trajectory from the simulation and to an ensemble of trajectories. The resulting spectra has peaks at zero and at the inertial frequency, which indicates that the model captures the turbulent background and the inertial oscillations, which are set not to have shifts. We also display the individual periodograms and model fits. \citet{Sykulski2016}  note that this highlights the method's robustness, since the individual periodograms show considerable variability, but the model fits are all quite consistent.
