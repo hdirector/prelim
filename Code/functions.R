@@ -28,9 +28,13 @@ getPerio <- function(Z, delta, dB = TRUE, noZero = TRUE) {
   return(list("sZ" = sZ, "omega" = omega))
 }
 
+<<<<<<< HEAD
 ###Function to get autocorrelation for the Matern###
 #Inputs: B: amplitude, alpha: smoothing, h: dampening, N: length of time series, delta: sampling interval
 #Outputs: ac: autocovariance 
+=======
+#Function to get autocorrelation for the matern
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
 maternAc <- function(B, alpha, h, N, delta) {
   ac <- rep(NA, N)
   ac[1] <- ((B^2)*beta(0.5, alpha - 0.5))/(2*pi*abs(h)^(2*alpha  - 1)) #variance (cov at lag 0) 
@@ -40,9 +44,13 @@ maternAc <- function(B, alpha, h, N, delta) {
   return(ac)
 }
 
+<<<<<<< HEAD
 ###Function to get autocorrelation for the OU process###
 #Inputs: A: amplitude, w0: inertial frequency, C: dampening, N: length of time series, delta: sampling interval
 #Outputs: ac: autocovariance 
+=======
+#Function to get autocorrelation for the OU process 
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
 ouAc <- function(A, w0, C, N, delta) {
   ac <- rep(NA, N)
   tau <- 0:(N - 1) #lags 
@@ -50,12 +58,21 @@ ouAc <- function(A, w0, C, N, delta) {
   return(ac)
 }
 
+<<<<<<< HEAD
 ####Function to simulate a time series with Matern covariance###
 #Inputs: B: amplitude, alpha: smoothing, h: dampening, N: length of time series, delta: sampling interval
 #output: Z: sample time series with specified matern covariance
 simMatern <- function(B, alpha, h, N, delta) {
   #calculate autocorrelation with Matern covariance
   ac <- maternAc(B, alpha, h, N, delta)
+=======
+#Function to simulate a time series with complex Matern covariance
+simMatern <- function(B, alpha, h, N, delta) {
+  
+  #calculate autocorrelation
+  ac <- maternAc(B, alpha, h, N, delta)
+  
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
   #Create covariance and generate realizations using standard gaussian tricks
   library(mvtnorm)
   L <- t(chol(toeplitz(ac)))
@@ -86,6 +103,7 @@ simFBM <- function(B, alpha, H, N) {
   return(Z)
 }
 
+<<<<<<< HEAD
 ###Function for the Blurred Whittle likelihood with 6 parameters###
 #Inputs: theta: vector of six parameters, theta = (A, B, w0,c, h, alpha) 
 #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
@@ -100,6 +118,14 @@ simFBM <- function(B, alpha, H, N) {
 ll <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
                incZero = FALSE, trans = TRUE) {
   #parameters to evaluate
+=======
+#Blurred Whittle likelihood
+ll <- function(theta,delta, curr, firstIndex, lastIndex, medIndex,
+               incZero = FALSE, trans = TRUE) {
+  #theta = (A, B, w0,c, h, alpha) 
+  #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
+  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
   if (trans == TRUE) {
     A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1; w0 <- theta[3]
     C <- expm1(theta[4]) + pi*sqrt(3)/N  + 1
@@ -109,7 +135,11 @@ ll <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
     A <- theta[1]; B <- theta[2]; w0 <- theta[3];
     C <- theta[4]; h <- theta[5]; alpha <- theta[6]
   }
+<<<<<<< HEAD
   #calculate likelihood
+=======
+  
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
   N <- length(curr$sZ)
   tau <-  seq(0, N - 1, 1)
   sTau <- ouAc(A, w0, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
@@ -117,6 +147,7 @@ ll <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
   if (incZero == TRUE) {
     llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
   } else {
+<<<<<<< HEAD
     tempIndex <- firstIndex:lastIndex
     tempIndex <- tempIndex[-which(tempIndex == medIndex)]
     llVal <- sum(curr$sZ[tempIndex]/sBar[tempIndex]) + sum(log(sBar[tempIndex]))
@@ -138,6 +169,20 @@ ll <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
 llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
                    CF, incZero = FALSE, trans = TRUE) {
   #parameters to evaluate
+=======
+    tempIndex <- c(firstIndex:(medIndex - 1), (medIndex + 1):lastIndex)
+    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
+  }
+  return(100*log(llVal))
+}
+
+#Simplified Blurred Whittle likelihood (fixed CF)
+llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
+                   CF, incZero = FALSE, trans = TRUE) {
+  #theta = (A, B, c, h, alpha) 
+  #A > 0: ou amplitude, B > 0: matern amplitude;
+  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
   if (trans == TRUE) {
     A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1; 
     C <- expm1(theta[3]) + pi*sqrt(3)/N  + 1
@@ -147,7 +192,11 @@ llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
     A <- theta[1]; B <- theta[2]; 
     C <- theta[3]; h <- theta[4]; alpha <- theta[5]
   }
+<<<<<<< HEAD
   #calculate likelihood
+=======
+  
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
   N <- length(curr$sZ)
   tau <-  seq(0, N - 1, 1)
   sTau <- ouAc(A, CF, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
@@ -158,6 +207,7 @@ llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
     tempIndex <- c(firstIndex:(medIndex - 1), (medIndex + 1):lastIndex)
     llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
   }
+<<<<<<< HEAD
   return(llVal)
 }
 
@@ -185,6 +235,19 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   #calculate periodogram for data
   curr <- getPerio(Z, delta, dB = FALSE, noZero = FALSE)
   
+=======
+  return(100*log(llVal))
+}
+
+
+#Function to fit likelihood
+fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, hess = NULL,
+                     needInits = TRUE, parInit = NULL, getHess = FALSE, simpModel = FALSE) {
+  
+  #calc. periodogram in function
+  curr <- getPerio(Z, delta, dB = FALSE, noZero = FALSE)
+  curr$sZ <- curr$sZ #renormalize based on delta
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
   
   N <- length(curr$sZ)
   
@@ -194,22 +257,40 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   lastIndex <- round(medIndex + fracPos*(N - medIndex)) #index of maximum frequency considered
   
   if (needInits == TRUE) {
+<<<<<<< HEAD
+=======
+    ####initial parameter estimates (using the well-reasoned parameters suggested in the paper's published code)
+    #theta = (A, B, w0,c, h, alpha) 
+    #A > 0: ou amplitude, B > 0: matern amplitude; 
+    #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37) 
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
     parInit <- rep(NA, 6) 
     parInit[3] <- CF #set w0 to coriolis freq
     parInit[6] <- 1 #set smoothness to 1 (corresponds to f^-2 decay)
     #TO DO: UNDERSTAND LOGIC OF THESE INITIAL PARAMETERS (claim to be from solving simultaneous eq's of spectral, but not an exact match to what's in paper)
     
+<<<<<<< HEAD
     #Find initial guess for OU amplitude and dampening, zeroing in on area around inertial oscillation peak 
     #Find index of  where frequencies move from inertial freq and turbulent background (as a guess, Sykulski et al. use half the coriolis freq)
     divideIndex <- round(medIndex + (0.5*CF/pi)*medIndex)
     #Find index of max value (other than frequency = 0); need to search different direction depending on 
     #sign of CF (positive in Southern Hemisphere and negative in Northern Hemisphere)
+=======
+    #Find initial guess for OU amplitude and dampening, zero in on area around inertial oscillation peak 
+    #Find index of  where frequencies move from inertial freq and turbulent background (as a guess, the author's use half the coriolis freq)
+    divideIndex <- round(medIndex + (0.5*CF/pi)*medIndex)
+    #Find index of max value (other than w = 0), need to search diff direction depending on sign of CF
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
     if (CF > 0) {
       maxIndex <- which.max(curr$sZ[divideIndex:N]) + divideIndex
     } else {
       maxIndex <- which.max(curr$sZ[1:divideIndex])
     }
+<<<<<<< HEAD
     #Consider freq's one either side of peak for OU parameter (Use 1/3 of the distance following Sykulski et al. )
+=======
+    #Consider freq's one either side of peak for ou par (1/3 of the distance, arbitrary choice used by author's just for initial parameters)
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
     numTest <- floor(abs(medIndex - maxIndex)/3)
     ioIndex <- c((maxIndex - numTest):(maxIndex -1), (maxIndex + 1):(maxIndex + numTest))
     parInit[4] <- quantile((curr$sZ[ioIndex]*(delta*curr$omega[ioIndex] - CF)^2)/(curr$sZ[maxIndex] - curr$sZ[ioIndex]), quantSet)
@@ -221,6 +302,7 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
     parInit[5] <- quantile(((curr$sZ[turbIndex]*(delta*curr$omega[turbIndex])^2)/(max(curr$sZ) - curr$sZ[turbIndex])), quantSet)
     parInit[2] <- sqrt(max(curr$sZ)*parInit[5]); parInit[5] <- sqrt(parInit[5])
   }  
+<<<<<<< HEAD
   
   #Transform parameters to an unconstrained space for optimization
   if (simpModel == FALSE) {
@@ -271,6 +353,67 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
                     firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex)
   } 
   
+=======
+  
+  #Transform parameters to an unconstrained space for optimization
+  if (simpModel == FALSE) {
+    transParInit <- rep(NA, 6)
+    transParInit[1] <- log1p(parInit[1] - 1) #0 < A < inf ===> -inf < log(A) < inf
+    transParInit[2] <- log1p(parInit[2] - 1) #0 < B < inf ===> -inf < log(B) < inf 
+    transParInit[3] <- parInit[3] #-inf < w0 < inf ===> -inf <- w0 < inf
+    transParInit[4] <- log1p(parInit[4] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
+    transParInit[5] <- log1p(parInit[5] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < h < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
+    transParInit[6] <- log1p(parInit[6] - 0.5 - 1) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
+  } else {
+    if (needInits == TRUE) {
+      parInit <- parInit[c(1:2, 4:6)]
+    }
+    transParInit <- rep(NA, 5)
+    transParInit[1] <- log1p(parInit[1] - 1) #0 < A < inf ===> -inf < log(A) < inf
+    transParInit[2] <- log1p(parInit[2] - 1) #0 < B < inf ===> -inf < log(B) < inf 
+    transParInit[3] <- log1p(parInit[3] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < c < inf ===> -inf < log(c - pi*sqrt(3)/N) < inf
+    transParInit[4] <- log1p(parInit[4] - pi*sqrt(3)/N - 1) #pi*sqrt(3)/N < h < inf ===> -inf < log(h - pi*sqrt(3)/N) < inf
+    transParInit[5] <- log1p(parInit[5] - 0.5 - 1) #0.5 < alpha < inf ===> -inf < log(alpha - 0.5) < inf
+  }
+  
+  #Maximize likelihood numerically
+  #theta = (A, B, w0,c, h, alpha) 
+  #A > 0: ou amplitude, B > 0: matern amplitude; w0: ou frequency, 
+  #c > 0: ou dampening, h: matern slope, alpha: matern smoothness  (pg. 37)
+  
+  if (simpModel == FALSE) {
+  opt <- optim(transParInit, ll, delta = delta, curr = curr, 
+               firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
+               control = list(maxit = 1000000000, reltol=1e-1000))
+  } else {
+  opt <- optim(transParInit, llSimp, delta = delta, curr = curr, 
+          firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
+          medIndex = medIndex, 
+          control = list(maxit = 1000000000, reltol=1e-1000))
+  }
+  llVal <- exp(opt$val/100)
+  
+  if (simpModel == FALSE) {
+    fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1 , opt$par[3], expm1(opt$par[4]) + pi*sqrt(3)/N + 1, 
+            expm1(opt$par[5]) + pi*sqrt(3)/N + 1, expm1(opt$par[6]) + 0.5 + 1)
+  } else {
+    fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1, expm1(opt$par[3]) + pi*sqrt(3)/N + 1, 
+              expm1(opt$par[4]) + pi*sqrt(3)/N + 1, expm1(opt$par[5]) + 0.5 + 1)
+  }
+  
+  if (simpModel == FALSE & getHess == TRUE) {
+    #Run again starting at true parameters on an untransformed space to get the hessian
+    #temp <- optim(fin, ll, delta = delta, curr = curr, trans = FALSE,
+    #              firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
+    #              method = "L-BFGS-B", lower = c(0, 0, -Inf, pi/(sqrt(3)*N), pi/(sqrt(3)*N), 1/2), upper = rep(Inf, 6),
+    #              hessian = TRUE)
+    #hess <- temp$hessian
+    library("numDeriv")
+    hess <- hessian(ll, fin, delta = delta, curr = curr, trans = FALSE,
+            firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex)
+  } 
+  
+>>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
   #Return results
   if (simpModel == FALSE) {
     return(list("A" = fin[1], "B" = fin[2], "w0" = fin[3],
