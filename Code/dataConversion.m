@@ -2,7 +2,7 @@
 %Prelim Exam, file conversion steps
 addpath('/users/hdirector/Documents/prelim/prelim/MatlabCode/Figs124')
 load drifterbetty2.mat
-save('/users/hdirector/Documents/prelim/prelim/Code/drifterbetty2.mat', '-v6') 
+save('/users/hdirector/Documents/prelim/prelim/Code/drifterbetty2.mat', '-v6')
 
 addpath('/users/hdirector/Documents/prelim/prelim/MatlabCode/Fig5')
 load newinertial.mat
@@ -10,12 +10,10 @@ save('/users/hdirector/Documents/prelim/prelim/Code/newinertial.mat', '-v6')
 
 addpath('/users/hdirector/Documents/prelim/prelim/MatlabCode/Fig6-10')
 load drifterulysses.mat
-<<<<<<< HEAD
 save('/users/hdirector/Documents/prelim/prelim/Code/drifterulysses.mat', '-v6')
 
 addpath('/users/hdirector/Documents/prelim/prelim/MatlabCode/Fig6-10')
 load Ulysses6p.mat
 save('/users/hdirector/Documents/prelim/prelim/Code/Ulysses6p.mat', '-v6')
-=======
 save('/users/hdirector/Documents/prelim/prelim/Code/drifterulysses.mat', '-v6')
->>>>>>> 4b5cc941abc8069168b1255cccb00928f22b7945
+save('/users/hdirector/Documents/prelim/prelim/Code/drifterulysses.mat', '-v6')
