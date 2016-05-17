@@ -99,6 +99,7 @@ simFBM <- function(B, alpha, H, N) {
 #output: negative of the log likelihood value 
 ll <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
                incZero = FALSE, trans = TRUE) {
+  N <- length(curr$sZ)
   #parameters to evaluate
   if (trans == TRUE) {
     A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1; w0 <- theta[3]
@@ -110,7 +111,6 @@ ll <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
     C <- theta[4]; h <- theta[5]; alpha <- theta[6]
   }
   #calculate likelihood
-  N <- length(curr$sZ)
   tau <-  seq(0, N - 1, 1)
   sTau <- ouAc(A, w0, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
   sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) #Interpet this, why no negs for sBar?
@@ -185,7 +185,6 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   #calculate periodogram for data
   curr <- getPerio(Z, delta, dB = FALSE, noZero = FALSE)
   
-  
   N <- length(curr$sZ)
   
   #set window of frequencies to consider in evalution (assuming frequencies sorted min to max)
@@ -247,11 +246,11 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   if (simpModel == FALSE) {
     library("pracma")
     opt <- fminsearch(ll, transParInit, delta = delta, curr = curr,
-                      firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex, maxiter = 3000) 
+                      firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex) 
   } else {
     opt <- fminsearch(llSimp, transParInit, delta = delta, curr = curr, 
                       firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
-                      medIndex = medIndex, maxiter = 3000)
+                      medIndex = medIndex)
   }
   llVal <- opt$fval
   

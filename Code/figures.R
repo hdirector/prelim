@@ -54,6 +54,10 @@ green <- getPerio(Z = gZ, delta = DELTA)
 gCf <- mean(-4*pi*drift$f[gStartTs:gEndTs])
 bCf <- mean(-4*pi*drift$f[bStartTs:gStartTs])
 
+#time series lengths
+bN <- length(bZ)
+gN <- length(gZ)
+
 #plot figure
 #pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig2.pdf')
 par(mfrow = c(1, 2))
@@ -71,6 +75,7 @@ abline(v = gCf, col = "red")
 bCF <- mean(-4*pi*(drift$f[bStartTs:bEndTs]))
 gCF <- mean(-4*pi*(drift$f[gStartTs:gEndTs]))
 
+
 #Fit and plot blue time series
 bFit <- fitModel(bZ, bCF, delta = DELTA, fracNeg = 0.4, fracPos = 0, quantSet = .5)
 #pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig4.pdf')
@@ -78,36 +83,36 @@ par(mfrow = c(1,2))
 plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
 mtext("Replication of Figure 4", outer = T, line = -3)
-sTau <- ouAc(bFit$A, bFit$w0, bFit$C, N, delta = DELTA) + maternAc(bFit$B, bFit$alpha, bFit$h, N, delta = DELTA)  
-tau <- seq(0, N - 1)
-sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+sTau <- ouAc(bFit$A, bFit$w0, bFit$C, bN, delta = DELTA) + maternAc(bFit$B, bFit$alpha, bFit$h, bN, delta = DELTA)  
+tau <- seq(0, bN - 1)
+sBar <- 2*fft(sTau*(1 - (tau/bN))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
 points(DELTA*blue$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
 points(DELTA*blue$omega[bFit$firstIndex:bFit$lastIndex], 10*log10(sBar)[bFit$firstIndex:bFit$lastIndex], 
        col = "green", type = "l", lwd = 3)
-abline(v = CF, lwd = 3) #inertial frequency
+abline(v = bCF, lwd = 3) #inertial frequency
 abline(v = bFit$w0, lwd = 3, lty = 3) #estimated w0
-abline(v = CF - bFit$w0, lwd = 3, lty = 3) #shifted inertial freq (f = f0 - w_eddy)
+abline(v = bCF - bFit$w0, lwd = 3, lty = 3) #shifted inertial freq (f = f0 - w_eddy)
 
 #Fit and plot green time series
-abline(v = f0, col = "red")
 gFit <- fitModel(gZ, gCF, delta = DELTA, fracNeg = 0.4, fracPos = 0,  quantSet = 0.5)
 plot(DELTA*green$omega, green$sZ, type = "l", col = "green", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi), ylim = c(-20, 60))
-sTau <- ouAc(gFit$A, gFit$w0, gFit$C, N, delta = DELTA) + maternAc(gFit$B, gFit$alpha, gFit$h, N, delta = DELTA)  
-tau <- seq(0, N - 1)
-sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
+abline(v = gCF, col = "red")
+sTau <- ouAc(gFit$A, gFit$w0, gFit$C, gN, delta = DELTA) + maternAc(gFit$B, gFit$alpha, gFit$h, gN, delta = DELTA)  
+tau <- seq(0, gN - 1)
+sBar <- 2*fft(sTau*(1 - (tau/gN))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
 points(DELTA*green$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd = 3)
 points(DELTA*blue$omega[bFit$firstIndex:bFit$lastIndex], 10*log10(sBar)[bFit$firstIndex:bFit$lastIndex], 
        col = "blue", type = "l", lwd = 3)
-abline(v = CF, lwd = 3) #inertial frequency
+abline(v = gCF, lwd = 3) #inertial frequency
 #dev.off()
-
 
 ##################################
 #Figure 3: Simulate Matern and FBM
 ##################################
 ###Figure 3###
 DELTA <- 2
+
 #sample matern process
 set.seed(103)
 N <- 1000
@@ -199,13 +204,11 @@ for (i in 2:nSim) {
   print(i)
 }
 
-#store results
+#store or load results
 #save(sZMat, file = '/users/hdirector/Documents/prelim/prelim/Code/sZMat.rda')
 #save(sBarMat, file = '/users/hdirector/Documents/prelim/prelim/Code/sBarMat.rda')
-
-#load results
-load('/users/hdirector/Documents/prelim/prelim/Code/sZMat.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/sBarMat.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/sZMat.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/sBarMat.rda')
 
 #plot first periodogram to make initial plot
 plot(sim1Per$omega, sim1Per$sZ, type = "l", col = "lightgrey",
@@ -336,17 +339,17 @@ for (i in 501:(N - 500)) {
   print(i)
 }
 
+#store or load results
 save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
 save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
 save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
 save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
 save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
-
-load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #plot observed periodogram
 #png('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig7.png')
