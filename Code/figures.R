@@ -305,7 +305,7 @@ for (i in 500:(N - 500)) {
   sZMat[i - 499, ] <- tempPer$sZ[firstIndex:lastIndex]
 }
 
-#Storage vectors for parameters, confidence interval bands, and hessians
+#Storage vectors for parameters, negative log likelihood, confidence interval bands, and hessians
 par6Val <- matrix(nrow = N - 999, ncol = 6)
 colnames(par6Val) <- c("A", "B", "w0", "C", "h", "alpha")
 par6LB <- par6UB <- par6Val
@@ -321,41 +321,43 @@ par6Val[1, ] <- c(toStartFit$A, toStartFit$B, toStartFit$w0,
 par6LB[1, ] <- par6Val[1, ] - step
 par6UB[1, ] <- par6Val[1, ] + step
 
-#Loop through all windows and calculate parameter estimates, confidence intervals, and hessian
-for (i in 501:(N - 500)) {
-  currCv <- driftUlys$cv[(i - 499):(i + 500)] 
-  CFCurr <- CFVec[i - 499]
-  #fit parameters, initialize estimates at value used in last run
-  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
-                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
-                      getHess = TRUE)
-  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
-                          tempFit$C, tempFit$h, tempFit$alpha)
-  llVal6[i - 499] <-  tempFit$llVal
-  #calculate confidence interval via Fisher's information
-  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess)))
-  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
-  hessArray[i - 499,,] <- tempFit$hess
-  print(i)
-}
-
-#store or load results
-save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
-save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
+#load results, rather than re-running
 #load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
 #load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
 #load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
 #load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
 #load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
+#Loop through all windows and calculate parameter estimates, confidence intervals, and hessian
+#for (i in 501:(N - 500)) {
+#  currCv <- driftUlys$cv[(i - 499):(i + 500)] 
+#  CFCurr <- CFVec[i - 499]
+  #fit parameters, initialize estimates at value used in last run
+#  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+#                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
+#                      getHess = TRUE)
+#  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
+#                          tempFit$C, tempFit$h, tempFit$alpha)
+#  llVal6[i - 499] <-  tempFit$llVal
+  #calculate confidence interval via Fisher's information
+#  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess)))
+#  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
+#  hessArray[i - 499,,] <- tempFit$hess
+#  print(i)
+#}
+
+#store or load results
+#save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+#save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+#save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+#save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+#save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
+
 #plot observed periodogram
 #png('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig7.png')
 par(mfrow = c(2, 1))
 library("fields")
-image.plot(xVal, 2*toStartPer$omega[firstIndex:lastIndex],
+image.plot(xVal, toStartPer$omega[firstIndex:lastIndex],
            sZMat, useRaster = TRUE, zlim = c(20, 60),
            ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
            xlab = "Day")
@@ -386,56 +388,53 @@ points(xVal, CFVec, col = "white", lwd = 0.1)
 par(mfrow = c(4, 1))
 
 #plot w0 over time with confidence interval and coriolis frequency over time
-use <- which((!is.na(par6LB[,"w0"])) & (!is.na(par6UB[, "w0"])))
 plot(xVal, par6Val[,"w0"], ylim = c(.43, .67), type = "l", 
      xlab = "Day", ylab = "Inertial Frequencies", col = "blue") #initialize plot
-polygon(c(rev(xVal[use]), xVal[use]), c(rev(par6LB[use, "w0"]), par6UB[use, "w0"]), col = 'lightblue', border = NA)
+polygon(c(rev(xVal), xVal), c(rev(par6LB[, "w0"]), par6UB[, "w0"]), col = 'lightblue', border = NA)
 points(xVal, par6Val[,"w0"],  type = "l", col = "blue") #plot again, since line gets covered by polygon
-points(xVal[use], CFVec[use], col = "red", type ="l")
+points(xVal, CFVec, col = "red", type ="l")
 mtext("Replication of Figure 8", outer = T, line = -2)
 
 #plot inertial frequencies over time with confidence interval 
-useA <- which((!is.na(par6LB[,"A"])) & (!is.na(par6UB[, "A"])))
-plot(xVal[useA], par6Val[useA, "A"], ylim = c(0, 27), type = "l",
+plot(xVal, par6Val[, "A"], ylim = c(0, 27), type = "l",
      xlab = "Day", ylab  = "Amplitudes", col = "blue")
-polygon(c(rev(xVal[useA]), xVal[useA]), c(rev(par6LB[useA, "A"]), par6UB[useA, "A"]), col = 'lightblue', border = NA)
-points(xVal[useA], par6Val[useA, "A"], type = "l", col = "blue")
-useB <- which((!is.na(par6LB[,"B"])) & (!is.na(par6UB[, "B"])))
-polygon(c(rev(xVal[useB]), xVal[useB]), c(rev(par6LB[useB, "B"]), par6UB[useB, "B"]), col = 'pink', border = NA)
-points(xVal[useB], par6Val[useB, "B"], col = "red", type = "l")
+polygon(c(rev(xVal), xVal), c(rev(par6LB[, "A"]), par6UB[, "A"]), col = 'lightblue', border = NA)
+points(xVal, par6Val[, "A"], type = "l", col = "blue")
+polygon(c(rev(xVal), xVal), c(rev(par6LB[, "B"]), par6UB[, "B"]), col = 'pink', border = NA)
+points(xVal, par6Val[, "B"], col = "red", type = "l")
 
 #plot dampening over time with confidence interval
-useC <- which((!is.na(par6LB[,"C"])) & (!is.na(par6UB[, "C"])))
-plot(xVal[useC], par6Val[useC, "C"], ylim = c(0, 0.16), type = "l",
-     xlab = "Day", ylab = "Dampening", col = "blue")
-polygon(c(rev(xVal[useC]), xVal[useC]), c(rev(par6LB[useC, "C"]), par6UB[useC, "C"]), col = 'lightblue', border = NA)
-useH <- which((!is.na(par6LB[,"h"])) & (!is.na(par6UB[, "h"])))
-polygon(c(rev(xVal[useH]), xVal[useH]), c(rev(par6LB[useH, "h"]), par6UB[useH, "h"]), col = 'pink', border = NA)
-points(xVal[useH], par6Val[useH, "h"], col = "red", type = "l")
-points(xVal[useC], par6Val[useC, "C"], type = "l", col = "blue")
+plot(xVal, par6Val[, "h"], ylim = c(0, 0.16), type = "l",
+     xlab = "Day", ylab = "Dampening", col = "red")
+polygon(c(rev(xVal), xVal), c(rev(par6LB[, "h"]), par6UB[, "h"]), col = 'pink', border = NA)
+polygon(c(rev(xVal), xVal), c(rev(par6LB[, "C"]), par6UB[, "C"]), col = 'lightblue', border = NA)
+points(xVal, par6Val[, "C"], col = "blue", type = "l")
+points(xVal, par6Val[, "h"], type = "l", col = "red")
 
 #plot slope over time with confidence interval
-useAlpha <- which((!is.na(par6LB[,"alpha"])) & (!is.na(par6UB[, "alpha"])))
-plot(xVal[useAlpha], par6Val[useAlpha, "alpha"], ylim = c(0.6, 1.5), type = "l",
+plot(xVal, par6Val[, "alpha"], ylim = c(0.6, 1.5), type = "l",
      xlab = "Day", ylab = "Slope Parameter", col = "blue")
-polygon(c(rev(xVal[useAlpha]), xVal[useAlpha]), c(rev(par6LB[useAlpha, "alpha"]), par6UB[useAlpha, "alpha"]), col = 'lightblue', border = NA)
-points(xVal[useAlpha], par6Val[useAlpha, "alpha"],  type = "l",col = "blue")
+polygon(c(rev(xVal), xVal), c(rev(par6LB[, "alpha"]), par6UB[, "alpha"]), col = 'lightblue', border = NA)
+points(xVal, par6Val[, "alpha"],  type = "l",col = "blue")
 #dev.off()
 
 ###Figure 9 ####
-load('/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
+#load results, rather than re-running
+#load('/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
 
 #Fraction positive 
 fracPos <- 1.75*max(4*pi*driftUlys$f)/pi 
 
-#storage vectors for likelihood
+#storage vectors for negative log likelihood and parameters
 N <- length(driftUlys$cv)
 llVal5 <- rep(NA, N - 999)
+par5Val <- matrix(nrow = N - 499, ncol = 5, data = NA)
 
 #fit and store results for first time window (for set up)
 toStartFit5 <- fitModel(currCv, CFVec[1], DELTA, fracNeg = 0, fracPos = fracPos,
                         quantSet = .8, simpModel = TRUE)
 llVal5[1] <- toStartFit5$llVal
+par5Val[1, ] <- c(toStartFit$A, toStartFit$B, toStartFit$C, toStartFit$h, toStartFit$alpha)
 
 #Loop through all time points, fit simplified model, and store only likelihood
 for (i in 501:(N - 999)) {
@@ -444,12 +443,13 @@ for (i in 501:(N - 999)) {
   #fit parameters, initialize estimates at value used in last run
   tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
                       quantSet = .8, simpModel = TRUE, needInits = FALSE, parInit = par5Val[i - 499 -1, ])
-  #store log likelihood value
+  #store negative log likelihood value and parameter 
   llVal5[i - 499] <-  tempFit$llVal
+  par5Val[i - 499, ] <- c(toStartFit$A, toStartFit$B, toStartFit$C, toStartFit$h, toStartFit$alpha)
   print(i)
 }
 
-#save(llVal5, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
+save(llVal5, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
 
 #plot likelihood ratio test statistic
 #pdf('/users/hdirector/Documents/prelim/prelim/ReplicatedFigures/fig9.pdf')

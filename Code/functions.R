@@ -137,6 +137,7 @@ ll <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
 #output: negative of the log likelihood value 
 llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
                    CF, incZero = FALSE, trans = TRUE) {
+  N <- length(curr$sZ)
   #parameters to evaluate
   if (trans == TRUE) {
     A <- expm1(theta[1]) + 1; B <- expm1(theta[2]) + 1; 
@@ -148,7 +149,6 @@ llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
     C <- theta[3]; h <- theta[4]; alpha <- theta[5]
   }
   #calculate likelihood
-  N <- length(curr$sZ)
   tau <-  seq(0, N - 1, 1)
   sTau <- ouAc(A, CF, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
   sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) #Interpet this, why no negs for sBar?
@@ -259,8 +259,8 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
     fin <-  c(expm1(opt$xval[1]) + 1, expm1(opt$xval[2]) + 1 , opt$xval[3], expm1(opt$xval[4]) + pi*sqrt(3)/N + 1, 
               expm1(opt$xval[5]) + pi*sqrt(3)/N + 1, expm1(opt$xval[6]) + 0.5 + 1)
   } else {
-    fin <-  c(expm1(opt$par[1]) + 1, expm1(opt$par[2]) + 1, expm1(opt$par[3]) + pi*sqrt(3)/N + 1, 
-              expm1(opt$par[4]) + pi*sqrt(3)/N + 1, expm1(opt$par[5]) + 0.5 + 1)
+    fin <-  c(expm1(opt$xval[1]) + 1, expm1(opt$xval[2]) + 1, expm1(opt$xval[3]) + pi*sqrt(3)/N + 1, 
+              expm1(opt$xval[4]) + pi*sqrt(3)/N + 1, expm1(opt$xval[5]) + 0.5 + 1)
   }
   
   #Calculate Hessian where needed
