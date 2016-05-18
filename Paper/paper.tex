@@ -4,6 +4,7 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{amsmath}
+\usepackage{wrapfig}
 %%\setlength{\oddsidemargin}{0.25in}
 %%\setlength{\textwidth}{6in}
 %%\setlength{\topmargin}{0.5in}
@@ -61,6 +62,15 @@ The remainder of this review proceeds as follows.
  After a succint review of spectral analysis, Section 2 discusses the model for the drifters and the methods used to fit it. 
  Section 3 presents the paper's results including analysis of a long time series with time-varying parameters and an application from a simulated model. 
  The paper concludes with a discussion of the value and limitations of the approach taken by \citet{Sykulski2016}. 
+
+\begin{wrapfigure}{r}{0.5\textwidth}
+  \begin{center}
+    \includegraphics[width=0.48\textwidth]{ReplicatedFigures/fig1.pdf}
+  \end{center}
+  \caption{Birds}
+\end{wrapfigure}
+
+
 
 \section{Methods}
 			
@@ -190,10 +200,10 @@ This means that these models can still be obtained under the current model if mo
 They also highlight that that Mat\'{e}rn model is more appropriate than the other obvious choice of a fractional power model, FBM, since FBM does not have a bound on the velocities and tends to drift quite far from its mean.
  Figure ~\ref{fig: fbmMat} illustrates these differences by comparing the paths of a simulated particle obtained with a Mat\'{e}rn  covariance versus a FBM covariance. 
 
-\begin{figure}[hb]
+\begin{figure}[h!]
 	\label{fig: fmbMat}
   \centering
-    \includegraphics[width=.5\textwidth]{fig3.pdf}
+    \includegraphics[width=.7\textwidth]{ReplicatedFigures/fig3.pdf}
         \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale. }
 \end{figure}
 
@@ -206,6 +216,14 @@ S(\omega; \boldsymbol{\theta}) &= \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}} + 
 \label{eq: fullSpec}
 s_{\tau}(\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|) +  \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\kappa_{\alpha - 1/2}(h|\tau|).
 \end{align}
+
+\begin{figure}[h!]
+	\label{fig: fig4}
+  \centering
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig4.pdf}
+        \caption{ADD CAPTION}
+\end{figure}
+
 
 \subsection{Fitting the Model}
 \subsubsection{Blurred Whittle likelihood}
@@ -290,6 +308,13 @@ R(t) = 2[l_{b} \{\hat{\theta}_{1}(t) \} - l_{b}\{\hat{\theta}_{0}(t) \} ]
 \end{equation}
 where $\hat{\theta}_{0}(t)$ is the fitted parameter vector for the simpler, or null model, and $\hat{\theta}_{1}(t)$ is the fitted parameter vector for the full model.
  The authors claim $R(t)$ then follow a Chi-squared distribution with 1 degree of freedom.
+ 
+ \begin{figure}[h!]
+	\label{fig: fig9}
+  \centering
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig9.pdf}
+        \caption{ADD CAPTION}
+\end{figure}
 
 \section{Results}
 We show the potential utility of this method by analyzing two non-trivial data sets.  
@@ -298,10 +323,11 @@ In Figure ~\ref{fig:numSim}, we display the fit of the aggregate spectral model 
 The resulting spectra has peaks at zero and at the inertial frequency, which indicates that the model captures the turbulent background and the inertial oscillations, which are set not to have shifts. 
 We also display the individual periodograms and model fits. 
 \citet{Sykulski2016}  note that this highlights the method's robustness, since the individual periodograms show considerable variability, but the model fits are all quite consistent.
-\begin{figure}[hb]
+
+\begin{figure}[h!]
 	\label{fig:numSim}
   \centering
-    \includegraphics[width=.5\textwidth]{fig5.png}
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig5.png}
         \caption{Left: The spectral density of one particle (blue) with the model fit overlaid for the portion of the spectra used to fit it (green) and extended to all frequencies (red). Right: The ensemble mean periodogram (blue) with the ensemble fit for the frequencies used to fit it (green) and extended to the entire spectrum (red) and individual trajectories' periodograms (light grey) and model fits (dark fit) }
 \end{figure}
 
@@ -317,12 +343,14 @@ We then compare the fit to the full model using a likelihood ratio test as descr
  We conclude for time periods where the test statistic is greater than this cut-off that there is a shift in the inertial frequency. 
 
 
-\begin{figure}[hb]
-	\label{fig:timeVarying}
+\begin{figure}[h!]
+	\label{fig: fig8}
   \centering
-    \includegraphics[width=.5\textwidth]{fig7.png}
-        \caption{Top: Observed spectra of the drifter over time; Bottom: Modeled spectra over time. On both figures, the white line indicates the average inertial frequency within the rolling window at the current time period.  Only frequencies used in the estimation are included.  }
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig8.pdf}
+        \caption{ADD CAPTION}
 \end{figure}
+
+
 
 \section{Discussion}
 identifiability 
@@ -339,6 +367,21 @@ identifiability
 \subsection{Errata}
 
 \subsection{Additional Figures}
+
+\begin{figure}[h!]
+	\label{fig: fig2}
+  \centering
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig2.pdf}
+        \caption{ADD CAPTION}
+\end{figure}
+
+\begin{figure}[hb]
+	\label{fig:timeVarying}
+  \centering
+    \includegraphics[width=.8\textwidth]{ReplicatedFigures/fig7.png}
+        \caption{Top: Observed spectra of the drifter over time; Bottom: Modeled spectra over time. On both figures, the white line indicates the average inertial frequency within the rolling window at the current time period.  Only frequencies used in the estimation are included.  }
+\end{figure}
+
 
 \subsection{Computation}
 

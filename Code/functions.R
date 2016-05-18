@@ -151,12 +151,13 @@ llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
   #calculate likelihood
   tau <-  seq(0, N - 1, 1)
   sTau <- ouAc(A, CF, C, N, delta = 1) + maternAc(B, alpha, h, N, delta = 1)  
-  sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) #Interpet this, why no negs for sBar?
+  sBar <- 2*fft(sTau*(1 - (tau/N))) - sTau[1]; sBar = abs(Re(fftshift(sBar))) 
   if (incZero == TRUE) {
     llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
   } else {
-    tempIndex <- c(firstIndex:(medIndex - 1), (medIndex + 1):lastIndex)
-    llVal <- sum(curr$sZ[firstIndex:lastIndex]/sBar[firstIndex:lastIndex]) + sum(log(sBar[firstIndex:lastIndex]))
+    tempIndex <- firstIndex:lastIndex
+    tempIndex <- tempIndex[-which(tempIndex == medIndex)]
+    llVal <- sum(curr$sZ[tempIndex]/sBar[tempIndex]) + sum(log(sBar[tempIndex]))
   }
   return(llVal)
 }
@@ -243,8 +244,8 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   }
   
   #Maximize likelihood numerically
+  library("pracma")
   if (simpModel == FALSE) {
-    library("pracma")
     opt <- fminsearch(ll, transParInit, delta = delta, curr = curr,
                       firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex) 
   } else {
