@@ -335,36 +335,36 @@ par6LB[1, ] <- par6Val[1, ] - step
 par6UB[1, ] <- par6Val[1, ] + step
 
 #load results, rather than re-running
-load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
-load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+#load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #Loop through all windows and calculate parameter estimates, confidence intervals, and hessian
-#for (i in 501:(N - 500)) {
-#  currCv <- driftUlys$cv[(i - 499):(i + 500)] 
-#  CFCurr <- CFVec[i - 499]
-  #fit parameters, initialize estimates at value used in last run
-#  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
-#                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
-#                      getHess = TRUE)
-#  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
-#                          tempFit$C, tempFit$h, tempFit$alpha)
-#  llVal6[i - 499] <-  tempFit$llVal
-  #calculate confidence interval via Fisher's information
-#  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess)))
-#  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
-#  hessArray[i - 499,,] <- tempFit$hess
-#  print(i)
-#}
+for (i in 501:(N - 500)) {
+  currCv <- driftUlys$cv[(i - 499):(i + 500)] 
+  CFCurr <- CFVec[i - 499]
+#fit parameters, initialize estimates at value used in last run
+  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
+                      getHess = TRUE)
+  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
+                          tempFit$C, tempFit$h, tempFit$alpha)
+  llVal6[i - 499] <-  tempFit$llVal
+#calculate confidence interval via Fisher's information
+  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess)))
+  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
+  hessArray[i - 499,,] <- tempFit$hess
+  print(i)
+}
 
 #store or load results
-#save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-#save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-#save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-#save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
-#save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
+save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #plot observed periodogram
 png('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig7.png',
@@ -461,10 +461,10 @@ load('/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
 #for (i in 501:(N - 999)) {
 #  currCv <- driftUlys$cv[(i - 499):(i + 500)] 
 #  CFCurr <- CFVec[i - 499]
-  #fit parameters, initialize estimates at value used in last run
+#fit parameters, initialize estimates at value used in last run
 #  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
 #                      quantSet = .8, simpModel = TRUE, needInits = FALSE, parInit = par5Val[i - 499 -1, ])
-  #store negative log likelihood value and parameter 
+#store negative log likelihood value and parameter 
 #  llVal5[i - 499] <-  tempFit$llVal
 #  par5Val[i - 499, ] <- c(toStartFit$A, toStartFit$B, toStartFit$C, toStartFit$h, toStartFit$alpha)
 #  print(i)
@@ -474,16 +474,16 @@ load('/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
 #save(llVal5, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
 
 #plot likelihood ratio test statistic
-pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig9.pdf',
-    height = 2.5, width = 7)
-par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(1.4,5,4,1.1)) #for pretty exporting
+#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig9.pdf',
+#    height = 2.5, width = 7)
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(1.4,5,4,1.1)) #for pretty exporting
 par(mfrow = c(1, 1))
 #Note that we have stored the negative of the log likelihoods
 LRT <- 2*(-llVal6 - -llVal5)
 plot(xVal, LRT, type = "l", col = "blue", xlab = "Day",
      ylab = "Likelihood Ratio \n Test Statistic", main = "Replication of Figure 9")
 abline(h = qchisq(.95, 1), col = "red", lty = 2)
-dev.off()
+#dev.off()
 
 ###Figure 10###
 #Get Fisher info from Hessian
@@ -497,10 +497,8 @@ medCorr <- apply(fishArray, c(2, 3), function(x){mean(x, na.rm = T)})
 medCorr <- round(medCorr, 2)
 
 #plot shaded image corresponding to the Fisher's info
-image.plot(medCorr)
+image.plot(t(medCorr))
 
 ###Added Figures###
 Ulysses6 <- readMat("/users/hdirector/Documents/prelim/prelim/Code/Ulysses6p.mat")
-theirLL6 <- apply(rbind(Ulysses6$Ulysses6p[,,1]$score1, Ulysses6$Ulysses6p[,,1]$score2), 2, function(x){max(x)})
-diffLL <- -llVal6 - (-theirLL6)
-plot(diffLL, main = "Difference in Log-likelihood", xlab = "Day", ylab = "Difference in Value")
+theirHess <- Ulysses6$Ulysses6p[,,1]$var

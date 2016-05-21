@@ -246,12 +246,12 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   #Maximize likelihood numerically
   library("pracma")
   if (simpModel == FALSE) {
-    opt <- fminsearch(ll, transParInit, delta = delta, curr = curr,
-                      firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex) 
+    opt <- fminsearch(ll, transParInit, delta = delta, curr = curr,firstIndex = firstIndex,
+                       lastIndex = lastIndex, medIndex = medIndex, maxiter = 3000) 
   } else {
     opt <- fminsearch(llSimp, transParInit, delta = delta, curr = curr, 
                       firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
-                      medIndex = medIndex)
+                      medIndex = medIndex, maxiter = 3000)
   }
   llVal <- opt$fval
   
@@ -266,9 +266,10 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   
   #Calculate Hessian where needed
   if (simpModel == FALSE & getHess == TRUE) {
-    library("numDeriv")
-    hess <- hessian(ll, fin, delta = delta, curr = curr, trans = FALSE,
-                    firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex)
+    library("optimx")
+    hess <- optimHess(fin, ll,  delta = delta, curr = curr, trans = FALSE,
+                  firstIndex = firstIndex, lastIndex = lastIndex, medIndex = medIndex,
+                  control = list(maxit = 2000))
   } 
   
   #Return results
