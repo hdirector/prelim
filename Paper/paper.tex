@@ -48,10 +48,10 @@ Figure ~\ref{fig: fig1} shows a sample 250-day drifter trajectory.
 Oceanographers use these time series to increase understanding of  ocean circulation patterns.
  Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical Society Series C}}, this paper develops a model that can isolate a scientific quantity of interest,  and, in so doing, introduces several new statistical techniques.
  \begin{figure}[h!]
-	\label{fig: fig1}
   \centering
     \includegraphics[width=.6\textwidth]{ReplicatedFigures/fig1.pdf}
         \caption{A 250-day sample drifter trajectory with two 50-day periods highlighted in green and blue. The time period highlighted in green is not affected by an eddy while the time period highlighted  in blue is.}
+        	\label{fig: fig1}
 \end{figure}
  
 \par
@@ -59,7 +59,7 @@ The motion of parcels of water moving over changing latitudes is known to have a
 Because the Earth has  different diameter at different latitudes, the speed of objects moving with Earth's rotation varies across latitudes.  
 This induces a phenomena known as the Coriolis Effect, whereby very fast moving objects or objects being observed over long periods, such as drifters, end up moving at speeds that are different than the Earth beneath them as they change latitude. 
 Viewed from a stationary reference frame, this creates circular motions, or inertial oscillations. 
-These motions have known frequencies, referred to as inertial frequencies.
+These motions have known frequencies, referred to as inertial frequencies, which take on positive values in the Southern hemisphere and negative values in the Northern hemisphere corresponding to the different directions of rotation in the two hemispheres.
  Oceanographers  are interested in detecting deviations from these frequencies, as they are thought to indicate eddies, or persistent circular wave patterns \citep{Kunze1985}.
   However, the ocean has a constant turbulent background flow which makes identifying eddies in real data difficult \citep{ Elipot2010}.
  The majority of the previous work in oceanography has focused on detecting eddies using satellite altimetry rather than drifter data (see \citet{Isern2003} or \citet{Fu2010}, for example), so there is limited work on detecting eddies from drifters.
@@ -232,10 +232,10 @@ They also highlight that that Mat\'{e}rn model is more appropriate than the othe
  Figure ~\ref{fig: fmbMat} illustrates these differences by comparing the paths of a simulated particle obtained with a Mat\'{e}rn  covariance versus a FBM covariance. 
 
 \begin{figure}[h!]
-	\label{fig: fmbMat}
   \centering
     \includegraphics[width=.7\textwidth]{ReplicatedFigures/fig3.pdf}
         \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale. }
+        	\label{fig: fmbMat}
 \end{figure}
 
 \subsubsection{Overall Model}
@@ -249,10 +249,10 @@ s_{\tau}(\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c
 \end{align}
 
 \begin{figure}[h!]
-	\label{fig: fig4}
   \centering
     \includegraphics[width=\textwidth]{ReplicatedFigures/fig4.pdf}
         \caption{Periodograms of the time series sections colored blue and green in Figure ~\ref{fig: fig1}. The black line denotes the inertial frequency.   The dotted lines on the left figure indicate the location of the eddy peak and the expected shift in the inertial frequency. The semi-parametric model fit for the frequencies used in model fitting is highlighted green on the left figure and blue on the right figure. The red dotted line indicates the model fit extended beyond the frequencies where it was fit. }
+        	\label{fig: fig4}
 \end{figure}
 
 
@@ -334,7 +334,7 @@ The length of the window to fit these time-varying parameters needs to be large 
 \subsubsection{Significance tests for simpler models}
 \label{sec: sig}
 Finally, \citet{Sykulski2016} propose that a simple likelihood ratio test can be used at each time period to test whether or not a shift in the inertial oscillation has occurred. 
-To do so, the authors suggest fitting a simpler model where the the parameter $\omega_{0}$ is fixed to be the inertial frequency $f$. 
+To do so, the authors suggest fitting a simpler model where the the parameter $\omega_{0}$ is fixed to be the inertial frequency $f$, creating a five parameter model. 
 Then this simpler model can be compared to the full six parameter model via a likelihood ratio test with test statistic
 \begin{equation}
 \label{eq: LRT}
@@ -346,57 +346,135 @@ where $\hat{\theta}_{0}(t)$ is the fitted parameter vector for the simpler, or n
  
 
 \section{Results}
-We show the potential utility of this method by analyzing two non-trivial data sets.  
-First, we consider the modeled trajectories of 200 near-surface particles obtained from a computer simulation of ocean circulation. 
+\subsection{Simulated data}
+\par We show the potential utility of this method by analyzing two non-trivial data sets.  
+First, we consider the modeled trajectories of 200 near-surface particles obtained from a computer simulation of ocean circulation, where each of the trajectories are recorded at two hour intervals. 
 The simulation is set to be `very similar' to the SPEM 5.2 set-up of \citet{Danioux2008}). 
+In the  simulation, the turbulence is designed to be at a steady-state and wind forcing is set to be  constant. 
+The simulated data is useful as a verification tool, since  it contains no eddies and its only  notable asymmetry between the two directions of rotation is due to the inertial oscillations. 
+
+
+\par For all two hundred trajectories, the full six-parameter model, given in Equation ~\ref{eq: fullSpec}, is fit to each trajectory. 
+The model is fit using both sides of the spectrum with frequencies up to 1.5 times the inertial frequency. 
+The parameters are assumed constant, since this portion of the time series does is fairly short. 
 In Figure ~\ref{fig: numSim}, we display the fit of the aggregate spectral model to a single trajectory from the simulation and to an ensemble of trajectories. 
-The resulting spectra has peaks at zero and at the inertial frequency, which indicates that the model captures the turbulent background and the inertial oscillations, which are set not to have shifts. 
 We also display the individual periodograms and model fits. 
+The resulting spectra consistently have peaks at zero and at the inertial frequency, which indicates that the model captures the turbulent background and the inertial oscillations accurately. 
 \citet{Sykulski2016}  note that this highlights the method's robustness, since the individual periodograms show considerable variability, but the model fits are all quite consistent.
 
 \begin{figure}[h!]
-	\label{fig: numSim}
   \centering
     \includegraphics[width=\textwidth]{ReplicatedFigures/fig5.png}
-        \caption{Left: The spectral density of one particle (blue) with the model fit overlaid for the portion of the spectra used to fit it (green) and extended to all frequencies (red). Right: The ensemble mean periodogram (blue) with the ensemble fit for the frequencies used to fit it (green) and extended to the entire spectrum (red) and individual trajectories' periodograms (light grey) and model fits (dark fit) }
+        \caption{Left: The spectral density of one particle (blue) with the model fit overlaid for the portion of the spectra used to fit it (green) and extended to all frequencies (red). Right: The ensemble mean periodogram (blue) with the ensemble fit for the frequencies used to fit it (green) and extended to the entire spectrum (red). Individual trajectories' periodograms (light grey) and model fits (dark fit) are also displayed. }
+        \label{fig: fig5}
 \end{figure}
 
-We also consider the trajectory of a drifter in the South Pacific Ocean observed 12 times a day over a 1642 day period. 
-Using a rolling window of 1000 observations and the semi-parameteric set-up described in Section ~\ref{sec: semi} , we obtain parameter estimates for the spectral model at each time point.
- In Figure ~\ref{fig:timeVarying}, we compare the observed spectral density over time and the fitted spectral density.
-  The fitted density appears to be a smoothed version of the observed density, indicating a reasonable model fit.
-   We also display the fitted parameter values over time and their 95$\%$ confidence interval bands in Figure ~\ref{fig: fig8} report the correlation among variables in Figure 10 (and fig and renumber). Figure ~\ref{fig: timeVarying} displays the observed spectra versus the modeled spectra. 
+\subsection{South Pacific Drifter}
+\label{sec: spDrift}
+We also consider the trajectory of a drifter in the south Pacific ocean observed 12 times a day over a 1642 day period.  
+The trajectory is displayed in the right panel of Figure ~\ref{fig: fig6}. 
+We first considering fitting a 20-day sample of this trajectory. 
+Its periodogram, displayed in ~\ref{fig: fig6}, shows substantial asymmetry between the positive and negative frequencies. Thus, the semi-parametric approach is applied and only positive frequencies are used in fitting the model. 
 
-We also fit a 5-parameter where the frequency is set to the inertial frequency rather than being a free-parameter. 
-We then compare the fit to the full model using a likelihood ratio test as described in Section ~\ref{sec: sig}.
- In Figure 9, we display the test statistic over time where a red line is used to indicate the level of statistical significance. 
- We conclude for time periods where the test statistic is greater than this cut-off that there is a shift in the inertial frequency. 
-
-\begin{figure}[hb]
-	\label{fig:timeVarying}
+\begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig7.png}
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig6.pdf}
+        \caption{Left: The trajectory of the drifter in the south Pacific ocean. Right: The periodogram and model fit for the section of the trajectory highlighted in red. The green portion of the model fit corresponds to the frequencies used in fitting and the red dotted line is an extension of the fit to other frequencies. }
+        \label{fig: fig6}
+\end{figure}
+
+\par
+Moving on to the entire time series, we use rolling windows of 1000 observations and the semi-parametric set-up described in Section ~\ref{sec: semi}  to obtain parameter estimates for the spectral model at each time point.
+ In Figure ~\ref{fig:timeVarying}, we compare the observed spectral density over time and the fitted spectral density in a time-frequency plot. 
+  The fitted density appears to be a smoothed version of the observed density,  indicating a reasonable model fit.
+   Typically the inertial frequency matches the Coriolis frequency, which would be expected given that shifts from the Coriolis frequency are only rare events.
+   
+   \begin{figure}[h!]
+  \centering
+    \includegraphics[width=1\textwidth]{ReplicatedFigures/fig7.png}
         \caption{Top: Observed spectra of the drifter over time; Bottom: Modeled spectra over time. On both figures, the white line indicates the average inertial frequency within the rolling window at the current time period.  Only frequencies used in the estimation are included.  }
+        	\label{fig:timeVarying}
+\end{figure}
+
+   
+ \par
+ We also display the fitted parameter values over time and their 95$\%$ confidence interval bands in Figure ~\ref{fig: fig8}. 
+The 95$\%$ intervals are obtained using numerical calculation of the Hessian.
+The parameters all change smoothly over time. 
+We note that the inertial frequency differs from the Coriolis Frequency from roughly days 600 to 900. 
+\citet{Sykulski2016} note that this deviation is appropriate and can be explained by a change in tidal energy over shallow periods of water. 
+ \begin{figure}[h!]
+  \centering
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig8.png}
+        \caption{Estimates of the six model parameters overtime with 95$\%$ confidence interval bands. The red line in the top figure is the inertial frequency.}
+        	\label{fig: fig8}
 \end{figure}
 
  \begin{figure}[h!]
-	\label{fig: fig9}
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig9.pdf}
-        \caption{ADD CAPTION}
+    \includegraphics[width=.85\textwidth]{ReplicatedFigures/fig9.pdf}
+        \caption{Time series of the likelihood ratio test statistic comparing the 5-parameter to 6-parameter models. The dotted red line indicates the value at which test statistics indicate a significant difference between the model. }
+        	\label{fig: fig9}
 \end{figure}
 
-\begin{figure}[h!]
-	\label{fig: fig8}
+   
+   
+
+\par We also fit the 5-parameter model where the frequency is set to the inertial frequency rather than being a free-parameter. 
+We then compare this fit to the full model using a likelihood ratio test as described in Section ~\ref{sec: sig}.
+ In Figure 9, we display the test statistic over time where a red line is used to indicate the level of statistical significance. 
+The authors conclude that when there are statistically significant differences between the 5-parameter and 6-parameter model as indicated by the likelihood ratio test,   the inertial frequency does not equal the Coriolis frequency.   
+They note that the period from days 600 to 900 always shows a significant difference between the models, which corresponds to the period of shifts observed in Figure \ref{fig: fig8}.
+
+\par We, however, are skeptical of this use of simple hypothesis testing. 
+The parameters are being estimated repeatedly using a rolling window. 
+This means that there is not independence between the time periods and there is repeated testing. 
+Both of these issues should be accounted for in designing a hypothesis test. 
+Further, the authors acknowledge elsewhere in the paper that the length of the rolling window is currently selected empirically and that further work on selecting windows would be beneficial. 
+This suggests that the p-value for any time point could be easily influenced by the length of the window used in fitting it.
+Thus, robustness checks of this method to the length of the window would be appropriate prior to using it.
+In other words, further thought should go in to designing a hypothesis that accurately reflects the problem set-up and modeling. 
+
+
+
+
+ \begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig8.pdf}
-        \caption{ADD CAPTION}
+    \includegraphics[width=.6\textwidth]{ReplicatedFigures/fig10.pdf}
+        \caption{Table of the average correlation between parameters. Note that the parameters are ordered differently than in the paper, due to differences in the structure of the author's and my code. There are also minor differences in the correlation values, particularly for values close to zero. These differences can be attributed to slight differences in the numerical optimization used by R and Matlab in calculating the Hessian. }
+        	\label{fig: fig10}
 \end{figure}
+
+
+\par Finally, in Figure ~\ref{fig: fig10}, we display a matrix of the average correlation of the parameters over time. \citet{Sykulski2016} highlight several useful results from this table. 
+They note that the inertial frequency is generally uncorrelated with other parameters values, suggesting that the inertial frequency only controls the location of the peak, but does not influence the shape or amplitude of the spectra as desired. 
+They also highlight the many correlations between parameters that are part of the turbulent background component and inertial oscillation components of the model. 
+This indicates that these two aspects of the ocean's behavior are linked and should be modeled together as has been done in this paper. 
+
 
 
 
 \section{Discussion}
-identifiability 
+\par Overall, \citet{Sykulski2016} present a  well-developed model for capturing the behavior of ocean surface drifters.
+ In particular, they develop a two component spectral model that jointly accounts for the turbulent background behavior of the ocean and the influence of inertial oscillations. 
+ Using the complex-valued Ornstein-Uhlenbeck process, the authors develop a stochastic analogue to the accepted deterministic differential equations used to describe this phenomena. 
+ In so doing, they are the first to explicitly model inertial oscillations within the context of a stochastic model. 
+ Further, to model the turbulent background, the authors propose using the  Mat\'{e}rn autocovariance structure.
+  This flexible model cleverly encompasses all models that have previously been proposed for the turbulent background as special cases; thus, allowing the data to determine what is the most appropriate behavior. 
+   They also employ the newly-developed Blurred Whittle likelihood for model fitting, which reduces biases compared to other fitting techniques. 
+   All together, this spectral model provides an automated way to detect shifts from the Coriolis frequency in a long time series. 
+This provide an efficient way to detect eddies for large numbers and/or long time series. 
+So, the authors have both satisfied their scientific goal and have introduced new statistical ideas in doing so.
+
+Nevertheless, despite its overall sophistication, some areas in the paper could be improved. 
+As discussed in Section \ref{sec: spDrift}, the simple likelihood ratio test proposed in the paper may not be sufficient for the involved, time-varying model used in the paper.  
+Another area that is insufficiently addressed in the paper is possible identifiability issues between the model parameters. 
+Since primary interest is in the inertial frequency, if parameter estimates are highly correlated, physical changes in one parameter might actually be reflected by changes in other fitted parameter.
+ This would subsequently invalidate conclusions about observed changes in specific parameters, since they could be masked by changes in other parameters. 
+ The authors do allude to a lack of correlation between the inertial frequency and other model components, but this idea is not fully addressed.
+Overall, though \citet{Sykulski2016} present a novel method for modeling ocean surface drifters.
+ Their work is a substantial contribution to stochastic modeling, particularly, in terms, of explicitly incorporating known physics into statistical models. 
+
 
 
 
@@ -408,20 +486,22 @@ identifiability
 \section{Appendix}
 
 \subsection{Errata}
+We note a few minor errors in the paper.
+\begin{itemize}
+\item Equation 13 has a typo. The second term in the sum should exactly match Equation 6. 
+\item In Figure 6, the periodogram and model fit are for days 350 to 370 not days 358 to 378. (This is apparent from looking at the author's code.)
+\item In Figure 10, the fifth row in the table should be labeled $\alpha$ and not $\delta$.
+\end{itemize} 
 
-\subsection{Additional Figures}
+\subsection{Additional Replicated Figures}
 
 \begin{figure}[h!]
-	\label{fig: fig2}
   \centering
     \includegraphics[width=\textwidth]{ReplicatedFigures/fig2.pdf}
-        \caption{ADD CAPTION}
+        \caption{Periodograms of the highlighted green and blue sections of the trajectories in Figure ~\ref{fig: fig1}. The inertial frequencies are marked in red. }
+        	\label{fig: fig2}
 \end{figure}
 
-
-
-
-\subsection{Computation}
 
 
 

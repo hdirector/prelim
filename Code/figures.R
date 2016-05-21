@@ -335,11 +335,11 @@ par6LB[1, ] <- par6Val[1, ] - step
 par6UB[1, ] <- par6Val[1, ] + step
 
 #load results, rather than re-running
-#load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-#load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-#load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-#load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
-#load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #Loop through all windows and calculate parameter estimates, confidence intervals, and hessian
 for (i in 501:(N - 500)) {
@@ -367,16 +367,16 @@ save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
 save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #plot observed periodogram
-png('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig7.png',
-    height = 400, width = 600)
-par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(1.4,5,4,1.1), mai = c(.5, 1, .5, 1), oma = rep(.5, 4))
+#png('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig7.png',
+#    height = 600, width = 600)
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(3,5,4,1.1), mai = c(.9, 1, .5, 1), oma = rep(.5, 4))
 par(mfrow = c(2, 1))
 
 library("fields")
 image.plot(xVal, 2*toStartPer$omega[firstIndex:lastIndex],
            sZMat, useRaster = TRUE, zlim = c(20, 60),
            ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
-           xlab = "Day", cex.lab = .8)
+           xlab = "Day", cex.lab = 1)
 points(xVal, CFVec, col = "white", lwd = 0.1)
 mtext("Replication of Figure 7", outer = T, line = -1.5)
 
@@ -394,44 +394,45 @@ for (i in 1:(N - 999)) {
 image.plot(xVal, 2*toStartPer$omega[firstIndex:lastIndex],
            sZMatObs, useRaster = TRUE, zlim = c(20, 60),
            ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
-           xlab = "Day", cex.lab = .8)
+           xlab = "Day", cex.lab = 1)
 points(xVal, CFVec, col = "white", lwd = 0.1)
-dev.off()
+#dev.off()
 
 ###Figure 8###
 #plot Figures
-#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig8.pdf',
-#    height = 11, width = 8.5)
+#png('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig8.png',
+#    height = 1000, width = 800)
 #par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(1.4,5,4,1.1)) #for pretty exporting
 par(mfrow = c(4, 1))
 
 #plot w0 over time with confidence interval and coriolis frequency over time
-plot(xVal, par6Val[,"w0"], ylim = c(.43, .67), type = "l", 
-     xlab = "Day", ylab = "Inertial Frequencies", col = "blue", cex.lab = 1.5) #initialize plot
+plot(xVal, par6Val[,"w0"], ylim = c(.43, .67), type = "l", cex.axis = 2,
+     xlab = "Day", ylab = "Inertial Frequencies", col = "blue", cex.lab = 2) #initialize plot
 polygon(c(rev(xVal), xVal), c(rev(par6LB[, "w0"]), par6UB[, "w0"]), col = 'lightblue', border = NA)
 points(xVal, par6Val[,"w0"],  type = "l", col = "blue") #plot again, since line gets covered by polygon
 points(xVal, CFVec, col = "red", type ="l")
-mtext("Replication of Figure 8", outer = T, line = -2)
+mtext("Replication of Figure 8", outer = T, line = -2,
+      cex = 1.5)
 
 #plot inertial frequencies over time with confidence interval 
-plot(xVal, par6Val[, "A"], ylim = c(0, 27), type = "l",
-     xlab = "Day", ylab  = "Amplitudes", col = "blue", cex.lab = 1.5)
+plot(xVal, par6Val[, "A"], ylim = c(0, 27), type = "l", cex.axis = 2,
+     xlab = "Day", ylab  = "Amplitudes", col = "blue", cex.lab = 2)
 polygon(c(rev(xVal), xVal), c(rev(par6LB[, "A"]), par6UB[, "A"]), col = 'lightblue', border = NA)
 points(xVal, par6Val[, "A"], type = "l", col = "blue")
 polygon(c(rev(xVal), xVal), c(rev(par6LB[, "B"]), par6UB[, "B"]), col = 'pink', border = NA)
 points(xVal, par6Val[, "B"], col = "red", type = "l")
 
 #plot dampening over time with confidence interval
-plot(xVal, par6Val[, "h"], ylim = c(0, 0.16), type = "l",
-     xlab = "Day", ylab = "Dampening", col = "red", cex.lab = 1.5)
+plot(xVal, par6Val[, "h"], ylim = c(0, 0.16), type = "l", cex.axis = 2,
+     xlab = "Day", ylab = "Dampening", col = "red", cex.lab = 2)
 polygon(c(rev(xVal), xVal), c(rev(par6LB[, "h"]), par6UB[, "h"]), col = 'pink', border = NA)
 polygon(c(rev(xVal), xVal), c(rev(par6LB[, "C"]), par6UB[, "C"]), col = 'lightblue', border = NA)
 points(xVal, par6Val[, "C"], col = "blue", type = "l")
 points(xVal, par6Val[, "h"], type = "l", col = "red")
 
 #plot slope over time with confidence interval
-plot(xVal, par6Val[, "alpha"], ylim = c(0.6, 1.5), type = "l",
-     xlab = "Day", ylab = "Slope Parameter", col = "blue", cex.lab = 1.5)
+plot(xVal, par6Val[, "alpha"], ylim = c(0.6, 1.5), type = "l", cex.axis = 2, 
+     xlab = "Day", ylab = "Slope Parameter", col = "blue", cex.lab = 2)
 polygon(c(rev(xVal), xVal), c(rev(par6LB[, "alpha"]), par6UB[, "alpha"]), col = 'lightblue', border = NA)
 points(xVal, par6Val[, "alpha"],  type = "l",col = "blue")
 #dev.off()
@@ -495,10 +496,15 @@ for (i in 1:dim(hessArray)[1]) {
 #average over all time periods
 medCorr <- apply(fishArray, c(2, 3), function(x){mean(x, na.rm = T)})
 medCorr <- round(medCorr, 2)
+colnames(medCorr) <- c("A", "B", "w0", "c", "h", "alpha")
+rownames(medCorr) <- c("A", "B", "w0", "c", "h", "alpha")
 
-#plot shaded image corresponding to the Fisher's info
-image.plot(t(medCorr))
+#plot correlation
+library(corrplot)
+pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig10.pdf')
+corrplot(medCorr, method = "color", p.mat = medCorr, insig = "p-value",
+         sig.level = -1)
+mtext("Replication of Figure 10", outer = T, line = -3)
+dev.off()
 
-###Added Figures###
-Ulysses6 <- readMat("/users/hdirector/Documents/prelim/prelim/Code/Ulysses6p.mat")
-theirHess <- Ulysses6$Ulysses6p[,,1]$var
+
