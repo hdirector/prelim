@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{wrapfig}
+\usepackage{url}
 \usepackage{subfigure}
 %%\setlength{\oddsidemargin}{0.25in}
 %%\setlength{\textwidth}{6in}
@@ -46,7 +47,7 @@
 Drifters are free-floating  instruments that transmit their location at regular time intervals,  creating a \textbf{\it{Langrangian time series}}, or a sequence of spatial locations over time. 
 Figure~\ref{fig: fig1} shows a sample 250-day drifter trajectory. 
 Oceanographers use these time series to increase understanding of  ocean circulation patterns.
-Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical Society Series C}}, this paper develops a model that can isolate a scientific quantity of interest,  and, in so doing, introduces several new statistical techniques. \vmcomment{The last sentence is very low on information content.}
+Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical Society Series C}}, this paper makes a notable contribution to the statistical literature by illustrating how to directly embed knowledge of a physical system into a stochastic model. 
  \begin{figure}[h!]
   \centering
     \includegraphics[width=.6\textwidth]{ReplicatedFigures/fig1.pdf}
@@ -57,7 +58,7 @@ Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical So
 \par
 The motion of parcels of water moving over changing latitudes is known to have a rotational component. 
 Because the Earth has  different diameter at different latitudes, the speed of objects moving with Earth's rotation varies across latitudes.  
-This induces a phenomena known as the Coriolis Effect, whereby very fast moving objects or objects being observed over long periods, such as drifters, end up moving at speeds that are different than the Earth beneath them as they change latitude. 
+This induces a phenomena known as the Coriolis Effect, whereby very fast moving objects or objects observed over long periods, such as drifters, end up moving at speeds that are different than the Earth beneath them as they change latitude. 
 Viewed from a stationary reference frame, this creates circular motions, or inertial oscillations. 
 These motions have known frequencies, referred to as inertial frequencies, which take on positive values in the Southern hemisphere and negative values in the Northern hemisphere corresponding to the different directions of rotation in the two hemispheres.
  Oceanographers  are interested in detecting deviations from these frequencies, as they are thought to indicate eddies, or persistent circular wave patterns \citep{Kunze1985}.
@@ -72,7 +73,7 @@ The authors introduce an additive spectral domain model that has components corr
 The Mat\'{e}rn covariance commonly used in spatial statistics \citep{Gneiting2012} is applied for the first time to model the turbulent background. 
 Because of its flexibility, this covariance structure is shown to have more desirable features than previously-used stochastic models. 
 Inertial oscillations are modeled with a complex-valued Ornstein-Uhlenbeck (OU) \citep{Arato1962, Jeffreys1968}, which provides a stochastic equivalent to an accepted set of coupled differential equations describing inertial oscillations. 
-Further statistical innovation is employed in fitting the model with a variation on standard Whittle likelihood to reduce bias and in allowing for non-stationarity through time-varying parameter estimates.
+Further statistical innovation is employed in fitting the model with a variation on standard Whittle likelihood that compensates for both bias and aliasing and in allowing for non-stationarity through time-varying parameter estimates.
 \par
 The remainder of this report proceeds as follows.
  After a succinct review of spectral analysis, Section 2 discusses the model for the drifters and the methods used to fit it. 
@@ -91,11 +92,12 @@ We conclude the paper with a discussion of the value and limitations of the appr
 	\label{sec: specAnalysis}
 	\indent We briefly review spectral analysis as all the analysis in \citet{Sykulski2016} is done in the spectral domain.   
 	More thorough coverage of this material can be found in  \citep{Percival1993}, for example. 
-	From a statistical perspective, a time series, $z(t)$, real or complex-valued,  can be understood as a realization of a stochastic process over time, where  $t = \{1,2,...,n\}$ are the observed time points.  
-	Time series are often modeled as the sums of periodic functions, which, using Euler's formula, can be represented compactly as Fourier series. 
-	Moreover, data in the time domain can easily be related to data in the frequency domain and vice versa using the Fourier or inverse Fourier transformations\vmadd{:} 	
+	From a statistical perspective, a time series, $z(t)$, real or complex-valued,  can be understood as a realization of a stochastic process over time, where  $t = \{1,2,...,n\}$ index the observed time points.  
+	Time series are often modeled as the sums of periodic functions, which, using Euler's formula, can be represented compactly as sums of appropriately weighted complex exponentials. 
+	Moreover, data in the time domain can easily be related to data in the frequency domain and vice versa using the Fourier or inverse Fourier transformations:
+	\hdcomment{these are wrong} 	
 	\begin{align}
-z(t) = \int_{-\infty}^{\infty} f_{z}(\omega)e^{i\omega t}d\omega\vmadd{,} && f_{z}(\omega) = \int_{-\infty}^{\infty} z(t) e^{-i \omega t }dt.
+z(t) = \int_{-\infty}^{\infty} f_{z}(\omega)e^{i\omega t}d\omega,&& f_{z}(\omega) = \int_{-\infty}^{\infty} z(t) e^{-i \omega t }dt.
 \end{align}
 \citep{Percival1993}. 
 To understand the distribution of frequencies, the \textbf{\it{power spectral density}},
@@ -104,23 +106,23 @@ S_{z}(\omega) = \underset{T \rightarrow \infty}{\lim} \mathbb{E} \left(\frac{1}{
 \end{equation}
 is often employed. 
 This quantity represents the variance (or power) associated with each frequency \citep{Percival1993}. 
-Power spectral densities are useful for statistical modeling, since they can be related to the autocovariance sequence of a time series using  Fourier transformation.  
-For real $z(t)$, we define the autocovariance as $s_{z}(\tau) = \mathbb{E}[z(t) z(t - \tau)] $ and for complex $z(t)$, we define $s_{z}(\tau) = \mathbb{E}[z(t) z^{*}(t - \tau)] $ where $z^{*}(t)$ represents the complex conjugate of z(t). Letting $\tau$ be the time lag, we have
+Power spectral densities are useful for statistical modeling and can be related to the autocovariance sequence of a time series using  Fourier transformation.  
+We define the autocovariance  for $z(t)$ as $s_{z}(\tau) = \mathbb{E}[z(t) z^{*}(t - \tau)] $ where $z^{*}(t)$ represents the complex conjugate of z(t). Letting $\tau$ be the time lag, we have
 \begin{align}
 \label{eq: fourierPair}
-S_{z}(\omega) = \int_{-\infty}^{\infty}s_{z}(\tau) e^{-\omega t}d \tau \Longleftrightarrow s_{z}(\tau) = \frac{1}{2\pi} \int_{-\infty}^{\infty}S_{z}(\omega) e^{i \omega t} d\omega 
+S_{z}(\omega) = \int_{-\infty}^{\infty}s_{z}(\tau) e^{-i\omega t}d \tau \Longleftrightarrow s_{z}(\tau) = \frac{1}{2\pi} \int_{-\infty}^{\infty}S_{z}(\omega) e^{i \omega t} d\omega 
 \end{align}
 
-\noindent \citep{Sykulski2013}. For an observed time series, the power spectral density is often estimated with the periodogram, $\hat{S}_{z}(\omega) = |J_{z}(\omega)|^{2}$ where 
+\noindent \citep{Sykulski2013}. For an observed time series, the power spectral density is often estimated with the periodogram, where 
 \begin{equation}
 \label{eq: perio}
-J_{z}(\omega) = \sqrt{\frac{t}{N}} \sum_{t=1}^{N} z(t) e^{-i \omega t}
+\hat{S}_{z}(\omega) = \frac{\Delta}{N} \left( \sum_{t=1}^{N} z(t) e^{-i \omega t} \right)^{2}
 \end{equation}
 \citep{Sykulski2013}. 
-Although intuitively appealing, this estimator has known problems that stem from  sampling a periodic function at discrete intervals. 
-In particular,  high frequencies can  capture periodic behavior of other lower frequencies if they happen to align in period. 
-Additionally, frequencies above the highest observable frequency cannot be captured, and, are instead, recorded as other frequencies in the spectrum.  
-These effects, referred to as $\textbf{\it{aliasing}}$ and $\textbf{\it{leakage}}$ respectively,  are typically reduced by $\textbf{\it{tapering}}$. This method uses  a window of frequencies for estimation rather than a single value. 
+Although intuitively appealing, this estimator has known problems that stem from  sampling a time series at discrete intervals. 
+\textbf{\it{Aliasing}} refers to the fact that frequencies above the highest observable frequency cannot be captured, and, are instead, confounded with other frequencies in the spectrum.  
+\hdcomment{Get this right!} Additionally, \textbf{\it{Leakage}} refers to the effects of because Fourier transforms are applied are a smooth, create discontinuities
+$\textbf{\it{Tapering}}$ reduces leaking by \hdcomment{get this right!}
 However, depending on how tapering is used, it can introduce its own  biases in estimation.  
 
 
@@ -128,27 +130,28 @@ However, depending on how tapering is used, it can introduce its own  biases in 
  To model a drifter's movement over time, the eastward and northward components of the drifter's velocity, denoted $u(t)$ and $v(t)$ respectively, is converted to a complex-valued velocity, $z(t) = u(t) + iv(t)$. 
  Separate stochastic models are introduced for the inertial oscillation and turbulent background components of the drifter's behavior. 
  Working in the frequency domain, the two components of the model are added together, creating a six-parameter spectral model. 
- Parameter estimates for this model are obtained via maximizing the model's blurred Whittle likelihood, a relatively new approximation to the true spectral likelihood that balances computational efficiency with minimizing bias \citep{Sykulski2013}. 
+ Parameter estimates for this model are obtained via maximizing the model's blurred Whittle likelihood, a relatively new approximation to the true Whittle likelihood that compensates for bias and handles aliasing \citep{Sykulski2013}. 
  
 \subsubsection{Inertial oscillations}
 We begin by discussing the model for the inertial oscillations. 
 In a deterministic setting, inertial oscillations are often modeled with the following set of coupled differential equations
 \begin{align}
 \label{eq: deterOsc}
-\frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu\vmadd{,} \\ \nonumber
-\frac{\partial v}{\partial t} - f_{0}u &= G - cv\vmadd{,}
+\frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu,\\ \nonumber
+\frac{\partial v}{\partial t} - f_{0}u &= G - cv,
 \end{align}
 where $u$ and $v$ again represent eastward and northward velocities, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind  \citep{Pollard1970}. 
 Suppressing the dependence on $t$ and using the complex representation of the velocity,  we show that these relationships can be equivalently expressed as follows
 \begin{align}
 \label{eq:diffEqDeriv}
-\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}\\ \nonumber
-dz &= (F - c u- f_{0}v)dt + (iG - icv + if_{0}u)dt\\ \nonumber
-&= fo(-v + iu)dt - c(u + iv)dt + (F + iG)dt\\ \nonumber
-&= if_{0}(u + iv) - c(u + iv) + (F + iG)\\ \nonumber
+\nonumber
+\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt} \\ \nonumber
+dz &= (F - c u- f_{0}v)dt + i(G - cv + f_{0}u)dt\\ \nonumber
+&= f_{0}(-v + iu)dt - c(u + iv)dt + (F + iG)dt\\ \nonumber
+&= if_{0}(u + iv)dt - c(u + iv)dt + (F + iG)dt\\ 
 &= (if_{0} - c)z dt + (F + iG)dt. 
 \end{align}
-\citet{Sykulski2016} further replace the wind forcing term, $(F + iG)dt$  with complex-valued Brownian increments \citep{Mandelbrot1968} to obtain a stochastic analogue for Equation ~\ref{eq: deterOsc},
+\citet{Sykulski2016} further replace the wind forcing term, $(F + iG)dt$  with complex-valued Brownian increments \citep{Mandelbrot1968} to obtain a stochastic analogue for Equation \ref{eq:diffEqDeriv},
  \begin{equation}
 \label{eq: ouEq}
 dz(t) = (i f_{0} -c) z(t) dt + A d Q(t). 
@@ -156,59 +159,65 @@ dz(t) = (i f_{0} -c) z(t) dt + A d Q(t).
 Equation ~\ref{eq: ouEq}  is known as the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation. 
 In general,  OU processes are considered continuous-time equivalents to the AR(1) process. Specifically,  the univariate OU process is the only mean-zero, stationary, Gaussian, and continuous Markov process, and, similarly the multivariate OU process is the only mean-zero $K$-variate Markov process that is stationary, continuous, Gaussian, and Markov \citep{Schach1971}.
  The complex-valued OU process is the complex representation of a bivariate OU process.  
- In the formulation of Equation~\ref{eq: ouEq} , $c > 0$ is a dampening parameter that forces the process to always eventually return to its mean position, $z = 0$.  
+ In the formulation of Equation~\ref{eq: ouEq}, $c > 0$ is a dampening parameter that forces the process to always eventually return to its mean position, $z = 0$.  
  The final term of Equation~\ref{eq: ouEq} is a positive constant, $A$, multiplied by $dQ(t)$.  The term $Q(t), t \geq 0$ is a standard complex Wiener process,  meaning $Q(t) = Q_{1}(t) + i Q_{2}(t)$, where $Q_{1}(t)$ and $Q_{2}(t)$ are standard Wiener processes.
  We remind the reader that Wiener processes are the stochastic models originally used to represent Brownian motion. 
   Such a process $\{Q(t, \omega): t \geq 0\}$ on the measure space $(\omega, Q, P)$ must satisfy
 \begin{enumerate}
 \item $Q(0, \omega) = 0$ almost everywhere
 \item $\{Q(t, \omega): t \geq 0\}$ is distributed normally on $(\Omega,Q, P)$
-\item $Q(t + \tau, \omega) - Q(t, \omega)$ has mean 0 and variance $|\tau|$ for all $t, \tau > 0$
+\item $Q(t + \tau, \omega) - Q(t, \omega)$ has mean 0 and variance $\tau$ for all $t, \tau > 0$
 \end{enumerate}
 \citep{Hida1980}. 
 
 To identify and estimate shifts in the angular frequency, presumably caused by eddies, \citet{Sykulski2016} propose replacing the known inertial requency, $f_{0}$,  in Equation~\ref{eq: ouEq} with  a free parameter, $\omega_{0}$, to be estimated by the data. 
 If the estimated angular frequency differs from the inertial frequency, the angular frequency of the eddy can be calculated as $\omega_{eddy} = f_{0} - \omega_{0}$, since $\omega_{0}$ is a sum of the inertial and eddy frequencies.
 
-
-For time series modeling, we are interested in the autocovariance of this process at different time lags. To derive this value given as Equation 4 of \citet{Sykulski2016}, we follow \citet{Arato1999} and consider the bivariate rather than complex-valued OU process.
+For time series modeling, we are interested in the autocovariance of this process at different time lags. To derive the autocovariance as given as Equation 4 of \citet{Sykulski2016}, we follow \citet{Arato1999} and consider the bivariate rather than complex-valued OU process.
 This is possible since the autocovariance of a complex-valued random variable $z(t) = u(t) + i v(t)$ is defined as 
 \begin{equation}
 \label{eq: expec}
-\mathbb{E}\{z(t) z^{*}(t + \tau)\} = \mathbb{E}[u(t)u(t + \tau)] + \mathbb{E}[(v(t) v(t + \tau)] + i\{\mathbb{E}[u(t) v(t + \tau)] + \mathbb{E}[u(t)v( t + \tau)]\}
+s(\tau) = \mathbb{E}[z(t) z^{*}(t + \tau)] = \mathbb{E}[u(t)u(t + \tau)] + \mathbb{E}[(v(t) v(t + \tau)] + i(\mathbb{E}[u(t) v(t + \tau)] -\mathbb{E}[u(t + \tau)v( t)])
 \end{equation}
-\citep{DeIaco2003} where $z^{*}(t + \tau)$ represents the complex conjugate of $z(t + \tau)$. The differential equations for components $u$ and $v$ can be expressed in matrix form as 
+with time lag $\tau >0$ \citep{DeIaco2003}. The differential equations for components $u(t)$ and $v(t)$ can be expressed in matrix form as 
 \begin{align}
-Z(t) = \left( \begin{array}{c} u(t) \\ v(t) \end{array} \right) &= 
-\left( \begin{array}{cc} -c & -\omega_{0} \\ \omega_{0} & -c \end{array} \right) \left( \begin{array}{cc} u(t) \\ v(t) \end{array} \right) + \left( \begin{array}{c} A d Q(t) \\ Ad Q(t) \end{array} \right). 
+\left( \begin{array}{c} du(t) \\ dv(t) \end{array} \right) &= 
+\left( \begin{array}{cc} -c & -\omega_{0} \\ \omega_{0} & -c \end{array} \right) \left( \begin{array}{cc} u(t) \\ v(t) \end{array} \right) + \left( \begin{array}{c} A d Q_{1}(t) \\ Ad Q_{2}(t) \end{array} \right). 
 \end{align}
-For a multivariate OU process with generator $B$, the covariance matrix for a lag of $\tau$ is $\exp \{B \tau \}C(0)$\vmadd{,} where $s(0)$ represents the covariance at zero lag \vmdel{and $B$ is the generator matrix} \citep{Schach1971}. \vmcomment{Generator is defined neither in general nor in your particular case.}
-Using the known variance of a univariate OU process and the independence of the components $u(0)$, we have
+For a bivariate OU process, the covariance matrix at time lag $\tau > 0$ is 
 \begin{align}
-s(0) = \left( \begin{array}{cc} A^{2}/2c & 0 \\ 0 & A^{2}/2c \end{array} \right).
+\label{eq: bivOU}
+C(\tau) = \left( \begin{array}{cc} \mathbb{E}[u(t + \tau)u(t)] & \mathbb{E}[u(t + \tau)v(t)] \\ 
+\mathbb{E}[v(t + \tau)u(t)] & \mathbb{E}[v(t + \tau) v(t)] \end{array} \right) = \exp \left\{ \left( \begin{array}{cc} -c & -\omega_{0} \\ \omega_{0} & -c \end{array} \right)\tau \right\}C(0)
 \end{align}
-Thus, 
+\citep{Schach1971}.  \citet{Sykulski2016} specify that at the initial time, $z(t) \sim$ N(0, $A^{2}/2c$). We also note $u(t)$ and $v(t)$ are uncorrelated at the initial time, giving $\mathbb{E}[u(t)v(t)] = \mathbb{E}[v(t) u(t)] = 0$. Thus, Equation \ref{eq: expec} simplifies to
+\begin{equation}
+\label{eq: s0}
+s(0) = \frac{A^{2}}{2c} =  \mathbb{E}[u(t)^{2}] + \mathbb{E}[(v(t)^{2}]. 
+\end{equation}
+Since $u(t)$ and $v(t)$ are assumed to be identical processes, Equation \ref{eq: s0} implies $\mathbb{E}[u(t)^{2}] =\mathbb{E}[(v(t)^{2}] = A^{2}/4c$, which means Equation ~\ref{eq: bivOU} can be expressed as 
 \begin{align}
 \label{eq: covDeriv}
-\mathbb{E} \left[\left( \begin{array}{c} u(t + \tau) \\ v(t + \tau)  \end{array} \right) \left( \begin{array}{cc} u(t) & v(t) \end{array} \right)  \right] = e^{B \tau} s(0) = 
-e^{-c \tau} \left( \begin{array}{cc} \cos \tau \omega_{0} & - \sin \tau \omega \\ \sin \tau \omega_{0} & \cos \tau \omega  \end{array} \right)  \left( \begin{array}{cc} A^{2}/2c & 0 \\ 0 & A^{2}/2c \end{array} \right)\vmadd{,}
+ C(\tau) =  \exp \left\{ \left( \begin{array}{cc} -c & -\omega_{0} \\ \omega_{0} & -c \end{array} \right)\tau \right\} \left( \begin{array}{cc} A^{2}/4c & 0 \\ 0 & A^{2}/4c \end{array} \right)  &= 
+\frac{A^{2}}{4c} \exp (-c \tau) \left( \begin{array}{cc} \cos \tau \omega_{0} & - \sin \tau \omega_{0} \\ \sin \tau \omega_{0} & \cos \tau \omega_{0}  \end{array} \right) 
 \end{align}
-where the second equality can be seen by expanding the infinite series representations for $\exp(-\lambda \tau)$, $\sin(\tau \omega)$, and $\cos( \tau \omega)$. 
-Using the relevant components of Equation ~\ref{eq: covDeriv} in Equation ~\ref{eq: expec} and applying Euler's formula, we obtain the complex OU process autocovariance as defined in \citet{Sykulski2016}
+where the second equality can be seen by expanding the infinite series representations for $\exp(-c \tau)$, $\sin(\tau \omega_{0})$, and $\cos( \tau \omega_{0})$. 
+Finally, using the values in Equation \ref{eq: covDeriv} in Equation \ref{eq: expec}, we obtain the autocovariance  as defined in \citet{Sykulski2016}
 \begin{align}
-\label{eq: ouAC}
-s^{(0)}(\tau) & = \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|).
+\label{eq: ouAC} \nonumber
+s^{(o)}(\tau) & = \frac{A^{2}}{4c} \exp(-c\tau) 2(\cos \tau \omega_{0} + \sin \tau \omega_{0}) \\
+&= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|).
 \end{align}
- Using Equation ~\ref{eq: fourierPair}, the corresponding power spectral density can be found to be\begin{align}
+ The $(o)$ superscript denotes that this equation is for the OU component of the full model. Using Equation ~\ref{eq: fourierPair}, the corresponding power spectral density can be found to be\begin{align}
 \label{eq:ouPSD}
-S^{(0)}(\omega) &= \int_{-\infty}^{\infty} s^{(0)}(\tau) \exp (-i \omega \tau) d \tau = \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}}. 
+S^{(o)}(\omega) &=  \int_{-\infty}^{\infty} s^{(0)}(\tau) \exp (-i \omega \tau) d \tau = \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}}. 
 \end{align}
-The $(o)$ subscripts denotes that these equations are for the OU component of the full model. 
+
 
 
 \subsubsection{Turbulent Background}
 The drifters' time series are also marked by the ocean's large-scale turbulence. 
-The physics of ocean turbulence is summarized \vmdel{in} \vmadd{by} \citet{Rhines1979}. 
+The physics of ocean turbulence is summarized by \citet{Rhines1979}. 
 Many models for ocean turbulence have been proposed, including several stochastic models \citep{Lacasce2008}. 
 Within the oceanography literature, the stochastic models are designated  first-order \citep{Griffa1995, Falco2000}, second-order \citep{Sawford1991}, and third-order corresponding to  whether the velocity, acceleration, or hyperacceleration is modeled with a Markov process. 
 However, calculation of the spectral slopes in observed data indicate that this class of models, referred to as \textbf{\it{integer order}},  does not always adequately reflect the ocean's behavior \citep{Rupolo1996, Sanderson1991}. Rather, \textbf{\it{fractional power models}}, such as fractional Brownian motion (FBM), would better reflect the observed behavior in some cases. 
@@ -216,17 +225,17 @@ However, calculation of the spectral slopes in observed data indicate that this 
 Towards this end, the authors propose using a Mat\'{e}rn covariance structure \citep{Gneiting2012} for the turbulent background. 
 The Mat\'{e}rn model has gained prominence in the spatial statistics literature due to its flexibility.
  In this context, the Mat\'{e}rn model proves useful, since it allows for both integer and fractional powers. 
- The Mat\'{e}rn model is defined either by its autocovariance \vmdel{or power spectral density}
+ The Mat\'{e}rn model is defined either by its autocovariance 
 \begin{align}
 \label{eq:maternAC}
-s^{(m)}(\tau) = \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\kappa_{\alpha - 1/2}(h|\tau|)\vmadd{,}
+s^{(m)}(\tau) = \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\mathcal{K}_{\alpha - 1/2}(h|\tau|),
 \end{align}
-\vmadd{or power spectral density,}
+or power spectral density,
 \begin{align}
 \label{eq:maternPSD}
-S^{(m)}(\omega) = \frac{B^{2}}{(\omega^{2} + h^{2})^{\alpha}}\vmadd{,}
+S^{(m)}(\omega) = \frac{B^{2}}{(\omega^{2} + h^{2})^{\alpha}},
 \end{align}
-where $\tau$ again denotes the time lag, $\Gamma(\alpha)$ is the gamma function,  $\kappa_{\eta}$ is a modified Bessel function of the second kind of order $\eta$  and the s\vmdel{ub}\vmadd{uper}script $(m)$ indicates that this is the Mat\'{e}rn part of the model \citep{Stein2012}. 
+where $\tau$ again denotes the time lag, $\Gamma(\alpha)$ is the gamma function,  $\mathcal{K}_{\eta}$ is a modified Bessel function of the second kind of order $\eta$  and the superscript $(m)$ indicates that this is the Mat\'{e}rn part of the model \citep{Stein2012}. 
 The parameters to be estimated are the amplitude, $B$, the dampening, $h > 0$, and a smoothness parameter $\alpha > 1/2$.
  The parameter $\alpha$ is of particular importance, since it controls the smoothness, or degree of differentiability, of the process \citep{Fuentes2010}. 
 
@@ -238,7 +247,7 @@ They also highlight that that Mat\'{e}rn model is more appropriate than the othe
 \begin{figure}[h!]
   \centering
     \includegraphics[width=.7\textwidth]{ReplicatedFigures/fig3.pdf}
-        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale. \vmcomment{I would include legends or direct labeling for all your figures.}}
+        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component of the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale. \vmcomment{I would include legends or direct labeling for all your figures.}}
         	\label{fig: fmbMat}
 \end{figure}
 
@@ -247,9 +256,10 @@ Combining the inertial oscillation and turbulent background parts of the model i
  To find both the autocovariance and power spectral densities, we can simply add the corresponding components of the inertial oscillation and turbulent background autocovariances. 
  Using Equations ~\ref{eq: ouAC} and ~\ref{eq:maternAC} and Equations ~\ref{eq:ouPSD} and ~\ref{eq:maternPSD}, we obtain
 \begin{align}
-S(\omega; \boldsymbol{\theta}) &= \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}} + \frac{B^{2}}{(\omega^{2} + h^{2})^{\alpha}}\vmadd{,}\\
 \label{eq: fullSpec}
-s_{\tau}(\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|) +  \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\kappa_{\alpha - 1/2}(h|\tau|).
+s_{\tau}(\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|) +  \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\mathcal{K}_{\alpha - 1/2}(h|\tau|)
+,\\
+S(\omega; \boldsymbol{\theta}) &= \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}} + \frac{B^{2}}{(\omega^{2} + h^{2})^{\alpha}}.
 \end{align}
 
 \begin{figure}[h!]
@@ -266,40 +276,39 @@ s_{\tau}(\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c
  Referred to as \textbf{\it{blurred Whittle likelihood}}, this new likelihood builds on the well-known Whittle likelihood, a frequency-based approximation  to the time-domain likelihood that reduces computational cost. 
   Whittle likelihood is designed to approximate the likelihood for a univariate Gaussian process, $Z$,  in the time domain that has the likelihood
 \begin{align*}
-l_{t}(\theta) = - \frac{1}{2} log |C_{Z}(\theta) | - \frac{1}{2} Z^{T} C_{Z}^{-1}(\theta)Z\vmadd{,}
+l_{t}(\theta) = - \frac{1}{2} \log |C_{Z}(\theta) | - \frac{1}{2} Z^{T} C_{Z}^{-1}(\theta)Z\vmadd{,}
 \end{align*}
 where $\theta$ are the model parameters for a particular choice of covariance structure  and $t$ denotes the time domain  \citep{Sykulski2013}. \vmcomment{I should have mentioned this earlier in the test that all vectors and matrices need to be bolded.}
 
- It is known that  the periodogram, given in Equation ~\ref{eq: perio}, satisfies
+ It is known that  the periodogram satisfies
 \begin{equation}
-|J_{Z}(\omega)| \overset{d}{\rightarrow} S_{Z}(\omega) \chi^{2}_{2}/2
+\hat{S}_{z}(\omega) \overset{d}{\rightarrow} S_{Z}(\omega) \chi^{2}_{2}/2
 \end{equation}
 under certain regularity conditions \citep{Contreras2006}. 
 \citet{Whittle1953} combined this result with Fourier approximations to the true covariance structure and features of Toeplitz matrices to obtain the approximate likelihood
 \begin{align}
-l_{\omega}(\theta) &= - \sum_{\omega \in \Omega} \left[ J_{Z}^{H}(\omega) \tilde{S}_{Z}^{-1}(\omega; \theta) J_{Z}(\omega) + \log \{S(\omega; \theta) \} \right]\\
-\label{eq: bwl}
-&= -\sum_{\omega \in \Omega} \left[ \frac{\hat{S}_{Z}(\omega)}{S(\omega;\theta)}  + \log  \{ S(\omega; \theta) \}\right]\vmadd{,}
+l_{\omega}(\theta) 
+&= -\sum_{\omega \in \Omega} \left[ \frac{\hat{S}_{Z}(\omega)}{S(\omega;\theta)}  + \log  \{ S(\omega; \theta) \}\right],
 \end{align}
-where the subscript $w$ indicates that this is a Whittle likelihood and $H$ denotes a Hermitian matrix. 
-  This likelihood can be evaluated in $\mathcal{O}(N log(N))$ where $N$ is the length of the time series which is a notable increase in speed compared to the $\mathcal{O}(N^{3})$  required for time-domain likelihood  \citep{Sykulski2016}. 
+where the subscript $w$ indicates that this is a Whittle likelihood. 
+Leveraging the fast Fourier transform \citep{Cooley1965}, this  likelihood can be evaluated in $\mathcal{O}(N log(N))$, where $N$ is the length of the time series. 
+This is a notable increase in speed compared to the $\mathcal{O}(N^{3})$  required for time-domain likelihood  \citep{Sykulski2016}. 
   Nevertheless, this likelihood relies on the periodogram and so is affected by aliasing and leakage as discussed in Section~\ref{sec: specAnalysis}. 
  
-To improve on these problems, \citet{Sykulski2013} propose replacing the theoretical spectrum, $S_{Z}(\omega; \theta)$\vmadd{, in Equation ~\ref{eq: bwl}} with the expected value of the spectrum, \vmdel{$\overline{S}_{Z}(\omega, \theta)$}
+To improve on these problems, \citet{Sykulski2013} propose replacing the theoretical spectrum, $S_{Z}(\omega; \theta)$\, in Equation ~\ref{eq: bwl} with the expected value of the periodogram, 
 \begin{equation}
-\overline{S}(\omega; \theta) = \Delta \sum_{\tau = - (N - 1)}^{N-1} \left(1 - \frac{|\tau|}{N} \right)s_{\tau}(\theta) exp ( - i \omega \tau \Delta)\vmadd{.}
+\overline{S}(\omega; \theta) = \Delta \sum_{\tau = - (N - 1)}^{N-1} \left(1 - \frac{|\tau|}{N} \right)s_{\tau}(\theta) \exp ( - i \omega \tau \Delta).
 \end{equation} 
-This form of the expected spectrum can be shown to be equivalent to convolving the theoretical spectrum with the Fe\'{j}er kernel 
+This form of the expected periodogram can be shown to be equivalent to convolving the theoretical spectrum with the Fej\'{e}r kernel 
 \begin{equation}
-\mathcal{F}(\cdot) = \frac{\Delta}{2\pi N} \frac{sin^{2}(N \omega \Delta/2)}{sin^{2}(\omega \Delta /2)} 
+\mathcal{F}(\cdot) = \frac{\Delta}{2\pi N} \frac{\sin^{2}(N \omega \Delta/2)}{\sin^{2}(\omega \Delta /2)} 
 \end{equation} \citep{Sykulski2013}. 
-This improves the estimators obtained through maximizing the likelihood, because the expected value of the periodogram $\mathbb{E}[|J_{Z}(\omega)^{2}]$ is blurred in the same way as the observed periodogram. Thereby, effects due to sampling at discrete intervals are avoided. 
+\hdcomment{sentence wrong, look this up!} This improves the estimators obtained through maximizing the likelihood, because the expected value of the periodogram $\mathbb{E}[|J_{Z}(\omega)^{2}]$ is blurred in the same way as the observed periodogram. Also, aliasing effects due to sampling at discrete intervals are taken into account. 
 This leads to the final likelihood
 \begin{align}
-l_{b}(\theta) = - \sum_{\omega \in \Omega} \left[\frac{\hat{S}_{Z}(\omega)}{\overline{S}(\omega; \theta)} + \log \{ \overline{S} (\omega; \theta) \}\right]\vmadd{,}
+l_{b}(\theta) = - \sum_{\omega \in \Omega} \left[\frac{\hat{S}_{Z}(\omega)}{\overline{S}(\omega; \theta)} + \log \{ \overline{S} (\omega; \theta) \}\right],
 \end{align}
-which is maximized by standard \vmadd{off-the-shelf nonlinear} optimization techniques. 
-\vmcomment{State the exact method(s) that the paper and you used.}
+which is maximized by standard off-the-shelf nonlinear optimization techniques. (Specifically, \citet{Sykulski2016} uses the `fminsearchbnd' function in Matlab \citep{DErrico2006} and we use the `fminsearch' function in the `pracma' R package \citep{Borchers2015}.) 
 
 Using asymptotic properties of the Whittle likelihood, we also have 
 \begin{equation}
@@ -313,40 +322,40 @@ Thus, uncertainty estimates of the parameters can easily be obtained using numer
 \label{sec: semi}
 The authors note that the fitting of Equation~\ref{eq: fullSpec} can be adapted to reflect background knowledge about the drifters. 
 They refer to making these adjustments as applying a semi-parametric approach. 
-In their analysis, they highlight using knowledge of the physical system and adjusting for artifacts from interpolation. 
+In their analysis, they highlight using knowledge of the physical system and avoiding artifacts from interpolation. 
 Specifically,  variability can be different for the eastward versus northward velocities  which creates spurious correlations between positive and negative correlations. 
 To avoid this, the authors only fit the model using data from either the positive or negative half of the spectrum depending on the sign of the inertial oscillation, which is known based on the latitude of the drifter.  
-Similarly, sampling effects make the accuracy of high frequencies suspect, so the authors only use frequencies up to a specified threshold in fitting the model. Figure~\ref{fig: fig4} illustrates a semi-parametric model fit. 
+Similarly, sampling effects due to interpolation make the accuracy of high frequencies suspect, so the authors only use frequencies up to a specified threshold in fitting the model. Figure~\ref{fig: fig4} illustrates a semi-parametric model fit. 
 
 \subsubsection{Non-stationarity}
-Further, to allow for non-stationarity in long time series, \citet{Sykulski2016} propose fitting the model independently at each observed time point using a rolling window around the time point of interest. 
-This \vmdel{gives} \vmadd{makes parameters in} the OU differential equation
+To allow for non-stationarity in long time series, \citet{Sykulski2016} propose fitting the model independently at each observed time point using a rolling window around the time point of interest. 
+This makes parameters in the OU differential equation
 \begin{equation}
 dz(t) = \{i \omega_{0}(t) - c(t) \} z(t) dt + A(t) dQ(t)
 \end{equation}
 and spectral power density
 \begin{equation}
-S^{(0)}(\omega, t) = \frac{A(t)^{2}}{\{\omega - \omega_{0}\}^{2} + c(t)^{2}}\vmdel{.} 
+S^{(0)}(\omega, t) = \frac{A(t)^{2}}{\{\omega - \omega_{0}(t)\}^{2} + c(t)^{2}}
 \end{equation}
-\vmdel{with parameters} now \vmadd{be} \vmdel{a} function\vmadd{s} of time. 
+ now be a functions of time. 
 Similarly, the time-varying version of Mat\'{e}rn power spectral density is 
 \begin{equation}
 S^{(m)}(\omega, t) = \frac{B^{2}(t)}{\{\omega^{2} + h^{2}(t)\}^{\alpha(t)}}.
 \end{equation}
-The length of the window to fit these time-varying parameters needs to be large enough to allow for a full sampling of the spectrum, but short enough to be treated as locally stationary. 
+The length of the window to fit these time-varying parameters needs to be large enough to provide good estimation of the spectrum, but short enough to be treated as locally stationary. 
  In this analysis, the authors select a reasonable window length empirically, but acknowledge that further work on this subject would be of value.  
 
 \subsubsection{Significance tests for simpler models}
 \label{sec: sig}
 Finally, \citet{Sykulski2016} propose that a simple likelihood ratio test can be used at each time period to test whether or not a shift in the inertial oscillation has occurred. 
-To do so, the authors suggest fitting a simpler model where the the parameter $\omega_{0}$ is fixed to be the inertial frequency $f$, creating a five parameter model. 
+To do so, the authors suggest fitting a simpler model where the the parameter $\omega_{0}$ is fixed to be the inertial frequency $f_{0}$, creating a five parameter model. 
 Then this simpler model can be compared to the full six parameter model via a likelihood ratio test with test statistic
 \begin{equation}
 \label{eq: LRT}
 R(t) = 2[l_{b} \{\hat{\theta}_{1}(t) \} - l_{b}\{\hat{\theta}_{0}(t) \} ]\vmadd{,}
 \end{equation}
 where $\hat{\theta}_{0}(t)$ is the fitted parameter vector for the simpler, or null model, and $\hat{\theta}_{1}(t)$ is the fitted parameter vector for the full model.
- The authors claim $R(t)$ then follow a Chi-squared distribution with 1 degree of freedom. 
+ The authors claim $R(t)$ then follows a chi-squared distribution with 1 degree of freedom. 
  However, we note that this may be overly simplistic, because of potential identifiability issues with the parameters and lack of independence between time points stemming from the use of a rolling window. \vmcomment{I don't think the lack of independence between time points has an impact on the LRT, but using multiple LRTs without multiple testing correction, which is complicated by non-independence, is the main problem here, I think.}
  
 
@@ -354,7 +363,7 @@ where $\hat{\theta}_{0}(t)$ is the fitted parameter vector for the simpler, or n
 \subsection{Simulated data}
 \par We show the potential utility of this method by analyzing two non-trivial data sets.  
 First, we consider the modeled trajectories of 200 near-surface particles obtained from a computer simulation of ocean circulation, where each of the trajectories are recorded at two hour intervals. 
-The simulation is set to be `very similar' to the SPEM 5.2 set-up of \citet{Danioux2008}). 
+The simulation is set to be `very similar' to the SPEM 5.2 set-up of \citet{Danioux2008}. 
 In the  simulation, the turbulence is designed to be at a steady-state and wind forcing is set to be  constant. 
 The simulated data is useful as a verification tool, since  it contains no eddies and its only  notable asymmetry between the two directions of rotation is due to the inertial oscillations. 
 
@@ -362,14 +371,14 @@ The simulated data is useful as a verification tool, since  it contains no eddie
 \par For all two hundred trajectories, the full six-parameter model, given in Equation ~\ref{eq: fullSpec}, is fit to each trajectory. 
 The model is fit using both sides of the spectrum with frequencies up to 1.5 times the inertial frequency. 
 The parameters are assumed constant, since this portion of the time series does is fairly short. 
-In Figure ~\ref{fig: numSim}, we display the fit of the aggregate spectral model to a single trajectory from the simulation and to an ensemble of trajectories. 
+In Figure ~\ref{fig: fig5}, we display the fit of the aggregate spectral model to a single trajectory from the simulation and to an ensemble of trajectories. 
 We also display the individual periodograms and model fits. 
 The resulting spectra consistently have peaks at zero and at the inertial frequency, which indicates that the model captures the turbulent background and the inertial oscillations accurately. 
 \citet{Sykulski2016}  note that this highlights the method's robustness, since the individual periodograms show considerable variability, but the model fits are all quite consistent.
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig5.png}
+    \includegraphics[width=.8\textwidth]{ReplicatedFigures/fig5.png}
         \caption{Left: The spectral density of one particle (blue) with the model fit overlaid for the portion of the spectra used to fit it (green) and extended to all frequencies (red). Right: The ensemble mean periodogram (blue) with the ensemble fit for the frequencies used to fit it (green) and extended to the entire spectrum (red). Individual trajectories' periodograms (light grey) and model fits (dark fit) are also displayed. }
         \label{fig: fig5}
 \end{figure}
@@ -410,7 +419,7 @@ We note that the inertial frequency differs from the Coriolis Frequency from rou
 \citet{Sykulski2016} note that this deviation is appropriate and can be explained by a change in tidal energy over shallow periods of water. 
  \begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig8.png}
+    \includegraphics[width=.8\textwidth]{ReplicatedFigures/fig8.png}
         \caption{Estimates of the six model parameters overtime with 95$\%$ confidence interval bands. The red line in the top figure is the inertial frequency.}
         	\label{fig: fig8}
 \end{figure}
@@ -427,7 +436,7 @@ We note that the inertial frequency differs from the Coriolis Frequency from rou
 
 \par We also fit the 5-parameter model where the frequency is set to the inertial frequency rather than being a free-parameter. 
 We then compare this fit to the full model using a likelihood ratio test as described in Section ~\ref{sec: sig}.
- In Figure 9, we display the test statistic over time where a red line is used to indicate the level of statistical significance. 
+ In Figure ~\ref{fig: fig9}, we display the test statistic over time where a red line is used to indicate the level of statistical significance. 
 The authors conclude that when there are statistically significant differences between the 5-parameter and 6-parameter model as indicated by the likelihood ratio test,   the inertial frequency does not equal the Coriolis frequency.   
 They note that the period from days 600 to 900 always shows a significant difference between the models, which corresponds to the period of shifts observed in Figure \ref{fig: fig8}.
 
@@ -465,8 +474,9 @@ This indicates that these two aspects of the ocean's behavior are linked and sho
  Using the complex-valued Ornstein-Uhlenbeck process, the authors develop a stochastic analogue to the accepted deterministic differential equations used to describe this phenomena. 
  In so doing, they are the first to explicitly model inertial oscillations within the context of a stochastic model. 
  Further, to model the turbulent background, the authors propose using the  Mat\'{e}rn autocovariance structure.
-  This flexible model cleverly encompasses all models that have previously been proposed for the turbulent background as special cases; thus, allowing the data to determine what is the most appropriate behavior. 
-   They also employ the newly-developed Blurred Whittle likelihood for model fitting, which reduces biases compared to other fitting techniques. 
+  This flexible model cleverly encompasses all models that have previously been proposed for the turbulent background as special cases.
+  This allows the data to determine what is the most appropriate behavior. 
+   They also employ the newly-developed Blurred Whittle likelihood for model fitting, which compensates for bias and aliasing, unlike typical Whittle likelihood. 
    All together, this spectral model provides an automated way to detect shifts from the Coriolis frequency in a long time series. 
 This provide an efficient way to detect eddies for large numbers and/or long time series. 
 So, the authors have both satisfied their scientific goal and have introduced new statistical ideas in doing so.
@@ -477,7 +487,7 @@ Another area that is insufficiently addressed in the paper is possible identifia
 Since primary interest is in the inertial frequency, if parameter estimates are highly correlated, physical changes in one parameter might actually be reflected by changes in other fitted parameter.
  This would subsequently invalidate conclusions about observed changes in specific parameters, since they could be masked by changes in other parameters. 
  The authors do allude to a lack of correlation between the inertial frequency and other model components, but this idea is not fully addressed.
-Overall, though \citet{Sykulski2016} present a novel method for modeling ocean surface drifters.
+Overall, \citet{Sykulski2016} present a novel method for modeling ocean surface drifters.
  Their work is a substantial contribution to stochastic modeling, particularly, in terms, of explicitly incorporating known physics into statistical models. 
 
 

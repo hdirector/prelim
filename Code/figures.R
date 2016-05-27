@@ -30,8 +30,9 @@ bStartTs <- 2971; bEndTs <-3570 #index of 50 day period in blue is obtained from
 gStartTs <- 4201; gEndTs <- 4800 #index of 50 day period in blue is obtained from Sykulski et al. posted Matlab code
 
 #plot time series, coloring particular sections 
-#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig1.pdf')
-#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(1.4,5,4,1.1)) #for pretty exporting
+#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig1.pdf',
+#    height = 3, width = 4)
+par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(5,5,4,1.1)) #for pretty exporting
 par(mfrow = c(1, 1))
 plot(drift$lon[startTs:endTs], drift$lat[startTs:endTs], type = "l", 
      xlab = "Longitude", ylab = "Latitude", main = "Replication of Figure 1 (Right)")
@@ -131,7 +132,7 @@ fbmSamp <- simFBM(B = 10, alpha  = 0.9, H = 0.1, N = N)
 #pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig3.pdf',
 #    height = 6, width = 6)
 #par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(4,5,4,1.1), mai = rep(.5, 4), oma = rep(1, 4)) #for pretty exporting
-#layout(matrix(c(1, 2, 3, 3), 2, 2, byrow = TRUE))
+layout(matrix(c(1, 2, 3, 3), 2, 2, byrow = TRUE))
 #u coordinate vs. time
 plot(fbmSamp[,"u"], col = "blue", xlim = c(0, 1000), ylim = c(-200, 200),
      type = "l", xlab = expression(paste(t, Delta)), ylab = "u (cm/s)")
@@ -163,7 +164,6 @@ DELTA <- 1 #constant sampling increment
 vel <- num[[6]] + 1i*num[[7]] #complex velocities, measured in cm/s
 vel1 <- vel[,1] #first simulation, pulled out for left figure
 
-###TO-DO: See if we can just use the 4pi value here
 #inertial frequency
 lat <- num[[10]] 
 psi <- mean(lat[,1])*pi/180 
@@ -299,7 +299,7 @@ fracPos <- 1.75*max(4*pi*driftUlys$f)/pi
 #Periodogram and paremeter fit for first rolling window (used for set up)
 toStartPer <- getPerio(driftUlys$cv[1:nWin], DELTA, dB = TRUE, noZero = TRUE) 
 toStartFit <- fitModel(driftUlys$cv[1:nWin], CF,  DELTA, fracNeg = 0, fracPos = fracPos,
-                       quantSet = 0.8, incZero = TRUE, getHess = TRUE)
+                       quantSet = 0.8, incZero = FALSE, getHess = TRUE)
 step <- qnorm(.975)*sqrt(diag(solve(toStartFit$hess)))
 firstIndex <- toStartFit$firstIndex
 lastIndex <- toStartFit$lastIndex
@@ -312,11 +312,13 @@ for (i in 500:(N - 500)) {
   CFVec[i - 499] <- mean(4*pi*(driftUlys$f[(i - 499):(i + 500)])) #positive because of southern hemisphere
 }
 
-#get observed periodogram for each moving window
+#get observed periodogram for each moving window (only include frequencies which are used in fitting)
 for (i in 500:(N - 500)) {
-  tempPer <- getPerio(driftUlys$cv[(i - 499):(i + 500)], DELTA, dB = TRUE, noZero = TRUE) 
+  currCv <- driftUlys$cv[(i - 499):(i + 500)] 
+  tempPer <- getPerio(currCv, 2, dB = TRUE, noZero = TRUE)
   sZMat[i - 499, ] <- tempPer$sZ[firstIndex:lastIndex]
 }
+sZMat[sZMat < 20] <- 20
 
 #Storage vectors for parameters, negative log likelihood, confidence interval bands, and hessians
 par6Val <- matrix(nrow = N - 999, ncol = 6)
@@ -342,29 +344,29 @@ load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
 load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #Loop through all windows and calculate parameter estimates, confidence intervals, and hessian
-for (i in 501:(N - 500)) {
-  currCv <- driftUlys$cv[(i - 499):(i + 500)] 
-  CFCurr <- CFVec[i - 499]
+#for (i in 501:(N - 500)) {
+#  currCv <- driftUlys$cv[(i - 499):(i + 500)] 
+#  CFCurr <- CFVec[i - 499]
 #fit parameters, initialize estimates at value used in last run
-  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
-                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
-                      getHess = TRUE)
-  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
-                          tempFit$C, tempFit$h, tempFit$alpha)
-  llVal6[i - 499] <-  tempFit$llVal
+#  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+#                      quantSet = .5, needInits = FALSE, parInit = par6Val[i - 499 - 1, ],
+#                      getHess = TRUE)
+#  par6Val[i - 499, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
+#                          tempFit$C, tempFit$h, tempFit$alpha)
+#  llVal6[i - 499] <-  tempFit$llVal
 #calculate confidence interval via Fisher's information
-  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess)))
-  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
-  hessArray[i - 499,,] <- tempFit$hess
-  print(i)
-}
+#  step <- qnorm(.975)*sqrt(diag(solve(tempFit$hess)))
+#  par6LB[i - 499, ] <- par6Val[i - 499, ] - step; par6UB[i - 499, ] <- par6Val[i - 499, ] + step
+#  hessArray[i - 499,,] <- tempFit$hess
+#  print(i)
+#}
 
 #store or load results
-save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
-save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
-save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
-save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
-save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
+#save(par6Val, file = '/users/hdirector/Documents/prelim/prelim/Code/par6Val.rda')
+#save(par6LB, file =  '/users/hdirector/Documents/prelim/prelim/Code/par6LB.rda')
+#save(par6UB, file = '/users/hdirector/Documents/prelim/prelim/Code/par6UB.rda')
+#save(llVal6, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
+#save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #plot observed periodogram
 #png('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig7.png',
@@ -377,7 +379,7 @@ image.plot(xVal, 2*toStartPer$omega[firstIndex:lastIndex],
            sZMat, useRaster = TRUE, zlim = c(20, 60),
            ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
            xlab = "Day", cex.lab = 1)
-points(xVal, CFVec, col = "white", lwd = 0.1)
+points(xVal, CFVec, col = "black", lwd = 0.012)
 mtext("Replication of Figure 7", outer = T, line = -1.5)
 
 #find fitted periodogram
@@ -395,7 +397,7 @@ image.plot(xVal, 2*toStartPer$omega[firstIndex:lastIndex],
            sZMatObs, useRaster = TRUE, zlim = c(20, 60),
            ylab = expression(paste("Frequency in radians (", omega, Delta %in% Omega, ")")),
            xlab = "Day", cex.lab = 1)
-points(xVal, CFVec, col = "white", lwd = 0.1)
+points(xVal, CFVec, col = "black", lwd = 0.012)
 #dev.off()
 
 ###Figure 8###
@@ -501,10 +503,60 @@ rownames(medCorr) <- c("A", "B", "w0", "c", "h", "alpha")
 
 #plot correlation
 library(corrplot)
-pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig10.pdf')
+#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig10.pdf')
 corrplot(medCorr, method = "color", p.mat = medCorr, insig = "p-value",
          sig.level = -1)
 mtext("Replication of Figure 10", outer = T, line = -3)
-dev.off()
+#dev.off()
+
+#####################################
+#Extension plots, change window size
+#####################################
+###Make LRT plot with window length of 500####
+#find region to fit model in (semi-parametric, choice based on understanding of the physics)
+fracPos <- 1.75*max(4*pi*driftUlys$f)/pi 
+N <- length(driftUlys$cv)
+
+#Calculate the mean coriolis frequency for each moving window
+CFVec <- rep(NA, N - 1999)
+for (i in 999:(N - 1000)) {
+  CFVec[i - 999] <- mean(4*pi*(driftUlys$f[(i - 999):(i + 1000)])) #positive because of southern hemisphere
+}
+
+#Periodogram and paremeter fit for first rolling window (used for set up)
+toStartPer <- getPerio(driftUlys$cv[1:2000], DELTA, dB = TRUE, noZero = TRUE) 
+toStartFit <- fitModel(driftUlys$cv[1:2000], mean(CFVec[1]),  DELTA, fracNeg = 0, fracPos = fracPos,
+                       quantSet = 0.8, incZero = FALSE, getHess = TRUE)
+step <- qnorm(.975)*sqrt(diag(solve(toStartFit$hess)))
+firstIndex <- toStartFit$firstIndex
+lastIndex <- toStartFit$lastIndex
+
+#Storage vectors for parameters, negative log likelihood, confidence interval bands, and hessians
+par6Val_2000 <- matrix(nrow = N - 1999, ncol = 6)
+colnames(par6Val_500) <- c("A", "B", "w0", "C", "h", "alpha")
+llVal6_2000 <- rep(NA, N - 1999)
+llVal6_2000[1] <- toStartFit$llVal
+
+#store data for first window 
+par6Val_2000[1, ] <- c(toStartFit$A, toStartFit$B, toStartFit$w0,
+                  toStartFit$C, toStartFit$h, toStartFit$alpha)
+
+#Loop through all windows and calculate parameter estimates, confidence intervals, and hessian
+for (i in 1001:(N - 1000)) {
+  currCv <- driftUlys$cv[(i - 999):(i + 1000)] 
+  CFCurr <- CFVec[i - 999]
+#fit parameters, initialize estimates at value used in last run
+  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+                      quantSet = .8, needInits = FALSE, parInit = par6Val_2000[i - 999 - 1, ],
+                      getHess = FALSE)
+  par6Val_2000[i - 999, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
+                          tempFit$C, tempFit$h, tempFit$alpha)
+  llVal6_2000[i - 999] <-  tempFit$llVal
+  print(i)
+}
+
+#store  results
+save(llVal6_500, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6_500.rda')
+
 
 
