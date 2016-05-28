@@ -556,7 +556,39 @@ for (i in 1001:(N - 1000)) {
 }
 
 #store  results
-save(llVal6_500, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6_500.rda')
+#save(llVal6_2000, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6_2000.rda')
+
+###Simplified model using longer window
+#Periodogram and paremeter fit for first rolling window (used for set up)
+toStartPer <- getPerio(driftUlys$cv[1:2000], DELTA, dB = TRUE, noZero = TRUE) 
+toStartFit <- fitModel(driftUlys$cv[1:2000], mean(CFVec[1]),  DELTA, fracNeg = 0, fracPos = fracPos,
+                       quantSet = 0.8, incZero = FALSE, getHess = TRUE, simpModel = TRUE)
+firstIndex <- toStartFit$firstIndex
+lastIndex <- toStartFit$lastIndex
+
+#Storage vectors for parameters, negative log likelihood, confidence interval bands, and hessians
+par5Val_2000 <- matrix(nrow = N - 1999, ncol = 5)
+colnames(par5Val_2000) <- c("A", "B", "C", "h", "alpha")
+llVal5_2000 <- rep(NA, N - 1999)
+llVal5_2000[1] <- toStartFit$llVal
+
+#store data for first window 
+par5Val_2000[1, ] <- c(toStartFit$A, toStartFit$B, 
+                       toStartFit$C, toStartFit$h, toStartFit$alpha)
+
+#Loop through all windows and calculate parameter estimates, confidence intervals, and hessian
+for (i in 1001:(N - 1000)) {
+  currCv <- driftUlys$cv[(i - 999):(i + 1000)] 
+  CFCurr <- CFVec[i - 999]
+  #fit parameters, initialize estimates at value used in last run
+  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+                      quantSet = .8, needInits = FALSE, parInit = par5Val_2000[i - 999 - 1, ],
+                      getHess = FALSE, simpModel = TRUE)
+  par5Val_2000[i - 999, ] <- c(tempFit$A, tempFit$B,
+                               tempFit$C, tempFit$h, tempFit$alpha)
+  llVal5_2000[i - 999] <-  tempFit$llVal
+  print(i)
+}
 
 
 
