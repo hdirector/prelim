@@ -159,6 +159,7 @@ llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
     tempIndex <- tempIndex[-which(tempIndex == medIndex)]
     llVal <- sum(curr$sZ[tempIndex]/sBar[tempIndex]) + sum(log(sBar[tempIndex]))
   }
+  print(llVal)
   return(llVal)
 }
 
@@ -246,33 +247,23 @@ fitModel <- function(Z, CF, delta, fracNeg, fracPos, quantSet, incZero = FALSE, 
   #Maximize likelihood numerically
   library("pracma")
   if (simpModel == FALSE) {
-    #use transformation if possible (since faster)
-    if (any(is.infinite(transParInit))) {
-      opt <- fminsearch(ll, parInit, delta = delta, curr = curr,firstIndex = firstIndex,
-                        lastIndex = lastIndex, medIndex = medIndex, maxiter = 3000, trans = FALSE)
-      fin <- opt$xval
-    } else {
-      opt <- fminsearch(ll, transParInit, delta = delta, curr = curr,firstIndex = firstIndex,
-                        lastIndex = lastIndex, medIndex = medIndex, maxiter = 3000) 
-      fin <-  c(expm1(opt$xval[1]) + 1, expm1(opt$xval[2]) + 1 , opt$xval[3], expm1(opt$xval[4]) + pi*sqrt(3)/N + 1, 
-                expm1(opt$xval[5]) + pi*sqrt(3)/N + 1, expm1(opt$xval[6]) + 0.5 + 1)
-    }
+    opt <- fminsearch(ll, transParInit, delta = delta, curr = curr,firstIndex = firstIndex,
+                       lastIndex = lastIndex, medIndex = medIndex, maxiter = 3000) 
   } else {
-    if (any(is.infinite(transParInit))) {
-      opt <- fminsearch(llSimp, parInit, delta = delta, curr = curr, trans = FALSE,
-                        firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
-                        medIndex = medIndex, maxiter = 3000)
-      fin <- opt$xval
-    } else {
-      opt <- fminsearch(llSimp, transParInit, delta = delta, curr = curr,
-                        firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
-                        medIndex = medIndex, maxiter = 3000)
-      fin <-  c(expm1(opt$xval[1]) + 1, expm1(opt$xval[2]) + 1, expm1(opt$xval[3]) + pi*sqrt(3)/N + 1, 
-                expm1(opt$xval[4]) + pi*sqrt(3)/N + 1, expm1(opt$xval[5]) + 0.5 + 1)
-    }
+    opt <- fminsearch(llSimp, transParInit, delta = delta, curr = curr, 
+                      firstIndex = firstIndex, lastIndex = lastIndex, CF = CF,
+                      medIndex = medIndex, maxiter = 3000)
   }
-  
   llVal <- opt$fval
+  
+  #Convert parameters back to natural scale
+  if (simpModel == FALSE) {
+    fin <-  c(expm1(opt$xval[1]) + 1, expm1(opt$xval[2]) + 1 , opt$xval[3], expm1(opt$xval[4]) + pi*sqrt(3)/N + 1, 
+              expm1(opt$xval[5]) + pi*sqrt(3)/N + 1, expm1(opt$xval[6]) + 0.5 + 1)
+  } else {
+    fin <-  c(expm1(opt$xval[1]) + 1, expm1(opt$xval[2]) + 1, expm1(opt$xval[3]) + pi*sqrt(3)/N + 1, 
+              expm1(opt$xval[4]) + pi*sqrt(3)/N + 1, expm1(opt$xval[5]) + 0.5 + 1)
+  }
   
   #Calculate Hessian where needed
   if (simpModel == FALSE & getHess == TRUE) {

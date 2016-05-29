@@ -51,7 +51,7 @@ Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical So
  \begin{figure}[h!]
   \centering
     \includegraphics[width=.6\textwidth]{ReplicatedFigures/fig1.pdf}
-        \caption{A 250-day sample drifter trajectory with two 50-day periods highlighted in green and blue. The time period highlighted in green is not affected by an eddy while the time period highlighted  in blue is.}
+        \caption{A 250-day sample drifter trajectory with two 50-day periods highlighted in green and blue. The time period highlighted in green is not affected by eddies while the time period highlighted in blue is.}
         	\label{fig: fig1}
 \end{figure}
  
@@ -91,18 +91,17 @@ We conclude the paper with a discussion of the value and limitations of the appr
 	\subsection{Spectral Analysis}
 	\label{sec: specAnalysis}
 	\indent We briefly review spectral analysis as all the analysis in \citet{Sykulski2016} is done in the spectral domain.   
-	More thorough coverage of this material can be found in  \citep{Percival1993}, for example. 
+	More thorough coverage of this material can be found in  \citet{Percival1993}, for example. 
 	From a statistical perspective, a time series, $z(t)$, real or complex-valued,  can be understood as a realization of a stochastic process over time, where  $t = \{1,2,...,n\}$ index the observed time points.  
 	Time series are often modeled as the sums of periodic functions, which, using Euler's formula, can be represented compactly as sums of appropriately-weighted complex exponentials. 
-	Moreover, data in the time domain can easily be related to data in the frequency domain and vice versa using the Fourier or inverse Fourier transformations:
-	\hdcomment{these are wrong} 	
+	Moreover, data in the time domain can easily be related to data in the frequency domain and vice versa using the Fourier or inverse Fourier transformations,
 	\begin{align}
-z(t) = \int_{-\infty}^{\infty} f_{z}(\omega)e^{i\omega t}d\omega,&& f_{z}(\omega) = \int_{-\infty}^{\infty} z(t) e^{-i \omega t }dt.
+Z_{m} = \frac{1}{2T} \int_{-T}^{T}z(t)e^{-i\omega_{m}t} dt && z(t) = \sum_{m=-\infty}^{\infty}Z_{m}e^{i \omega_{m} t},
 \end{align}
-\citep{Percival1993}. 
+where $T$ indicates the period \citep{Percival1993}. 
 To understand the distribution of frequencies, the \textbf{\it{power spectral density}},
 \begin{equation}
-S(\omega) = \underset{T \rightarrow \infty}{\lim} \mathbb{E} \left(\frac{1}{2T} \left| \int_{-T}^{T} z(t) e^{-i \omega t}dt \right|^{2} \right),
+S_{z}(\omega) = \underset{T \rightarrow \infty}{\lim} \mathbb{E} \left(\frac{1}{2T} \left| \int_{-T}^{T} z(t) e^{-i \omega t}dt \right|^{2} \right),
 \end{equation}
 is often employed. 
 This quantity represents the variance (or power) associated with each frequency \citep{Percival1993}. 
@@ -110,20 +109,18 @@ Power spectral densities are useful for statistical modeling and can be related 
 We define the autocovariance  for $z(t)$ as $s(\tau) = \mathbb{E}[z(t) z^{*}(t - \tau)] $ where $z^{*}(t)$ represents the complex conjugate of z(t). Letting $\tau$ be the time lag, we have
 \begin{align}
 \label{eq: fourierPair}
-S(\omega) = \int_{-\infty}^{\infty}s(\tau) e^{-i\omega t}d \tau \Longleftrightarrow s(\tau) = \frac{1}{2\pi} \int_{-\infty}^{\infty}S(\omega) e^{i \omega t} d\omega 
+S_{z}(\omega) = \int_{-\infty}^{\infty}s_{z}(\tau) e^{-i\omega t}d \tau \Longleftrightarrow s_{z}(\tau) = \frac{1}{2\pi} \int_{-\infty}^{\infty}S_{z}(\omega) e^{i \omega t} d\omega 
 \end{align}
 
-\noindent \citep{Sykulski2013}. For an observed time series, the power spectral density is often estimated with the periodogram, where 
+\noindent \citep{Percival1993}. For an observed time series, the power spectral density is often estimated with the periodogram, where 
 \begin{equation}
 \label{eq: perio}
-\hat{S}(\omega) = \frac{\Delta}{N} \left( \sum_{t=1}^{N} z(t) e^{-i \omega t} \right)^{2}
+\hat{S}_{z}(\omega) = \frac{\Delta}{N} \left( \sum_{t=1}^{N} z(t) e^{-i \omega t \Delta} \right)^{2}
 \end{equation}
 \citep{Sykulski2013}. 
 Although intuitively appealing, this estimator has known problems that stem from  sampling a time series at discrete intervals. 
-\textbf{\it{Aliasing}} refers to the fact that frequencies above the highest observable frequency cannot be captured, and, are instead, confounded with other frequencies in the spectrum.  
-\hdcomment{Get this right!} Additionally, \textbf{\it{Leakage}} refers to the effects of because Fourier transforms are applied are a smooth, create discontinuities
-$\textbf{\it{Tapering}}$ reduces leaking by \hdcomment{get this right!}
-However, depending on how tapering is used, it can introduce its own  biases in estimation.  
+Specifically, \textbf{\it{Aliasing}} refers to the fact that frequencies above the highest observable frequency cannot be captured, and, are instead, confounded with other frequencies in the spectrum.  
+\textbf{\it{Leakage}} describes how as a result of convolution, power from one part of the spectral density function can be transferred to another part of the density. 
 
 
 \subsection{Stochastic Model}
@@ -157,7 +154,7 @@ dz &= (F - c u- f_{0}v)dt + i(G - cv + f_{0}u)dt\\ \nonumber
 dz(t) = (i f_{0} -c) z(t) dt + A d Q(t). 
 \end{equation}  
 Equation \ref{eq: ouEq}  is known as the complex-valued Ornstein-Uhlenbeck (OU) stochastic differential equation. 
-In general,  OU processes are considered continuous-time equivalents to the AR(1) process. Specifically,  the univariate OU process is the only mean-zero, stationary, Gaussian, and continuous Markov process, and, similarly the multivariate OU process is the only mean-zero $K$-variate process that is stationary, continuous, Gaussian, and Markov \citep{Schach1971}.
+In general,  OU processes are considered continuous-time equivalents to the AR(1) process. Specifically,  the univariate OU process is the only mean-zero, stationary, Gaussian, continuous Markov process, and, similarly the multivariate OU process is the only mean-zero $K$-variate process that is stationary, continuous, Gaussian, and Markov \citep{Schach1971}.
  The complex-valued OU process is the complex representation of a bivariate OU process.  
  In the formulation of Equation \ref{eq: ouEq}, $c > 0$ is a dampening parameter that forces the process to always eventually return to its mean position, $z = 0$.  
  The final term of Equation \ref{eq: ouEq} is a positive constant, $A$, multiplied by $dQ(t)$.  The term $Q(t), t \geq 0$ is a standard complex Wiener process,  meaning $Q(t) = Q_{1}(t) + i Q_{2}(t)$, where $Q_{1}(t)$ and $Q_{2}(t)$ are standard Wiener processes.
@@ -170,7 +167,7 @@ In general,  OU processes are considered continuous-time equivalents to the AR(1
 \end{enumerate}
 \citep{Hida1980}. 
 
-To identify and estimate shifts in the angular frequency, presumably caused by eddies, \citet{Sykulski2016} propose replacing the known inertial requency, $f_{0}$,  in Equation \ref{eq: ouEq} with  a free parameter, $\omega_{0}$, to be estimated by the data. 
+To identify and estimate shifts in the angular frequency, presumably caused by eddies, \citet{Sykulski2016} propose replacing the known inertial requency, $f_{0}$,  in Equation ~\ref{eq: ouEq} with  a free parameter, $\omega_{0}$, to be estimated by the data. 
 If the estimated angular frequency differs from the inertial frequency, the angular frequency of the eddy can be calculated as $\omega_{eddy} = f_{0} - \omega_{0}$, since $\omega_{0}$ is a sum of the inertial and eddy frequencies.
 
 For time series modeling, we are interested in the autocovariance of this process at different time lags. To derive the autocovariance as given in Equation 4 of \citet{Sykulski2016}, we follow \citet{Arato1999} and consider the bivariate rather than complex-valued OU process.
@@ -246,15 +243,15 @@ They also highlight that that Mat\'{e}rn model is more appropriate than the othe
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=.7\textwidth]{ReplicatedFigures/fig3.pdf}
-        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component of the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale. \vmcomment{I would include legends or direct labeling for all your figures.}}
+    \includegraphics[width=.9\textwidth]{ReplicatedFigures/fig3.pdf}
+        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component of the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale.}
         	\label{fig: fmbMat}
 \end{figure}
 
 \subsubsection{Overall Model}
 Combining the inertial oscillation and turbulent background parts of the model is straightforward.
  To find both the autocovariance and power spectral densities, we can simply add the corresponding components of the inertial oscillation and turbulent background autocovariances. 
- Using Equations \ref{eq: ouAC} and \ref{eq:maternAC} and Equations \ref{eq:ouPSD} and\ref{eq:maternPSD}, we obtain
+ Using Equations \ref{eq: ouAC} and \ref{eq:maternAC} and Equations \ref{eq:ouPSD} and \ref{eq:maternPSD}, we obtain
 \begin{align}
 \label{eq: fullSpec}
 s(\tau ;\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|) +  \frac{B^{2}}{2^{\alpha - 1/2}\pi^{1/2} \Gamma(\alpha) h^{2 \alpha - 1}}(h|\tau|)^{\alpha - 1}\mathcal{K}_{\alpha - 1/2}(h|\tau|)
@@ -262,12 +259,6 @@ s(\tau ;\boldsymbol{\theta}) &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|
 S(\omega; \boldsymbol{\theta}) &= \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}} + \frac{B^{2}}{(\omega^{2} + h^{2})^{\alpha}}.
 \end{align}
 
-\begin{figure}[h!]
-  \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig4.pdf}
-        \caption{Periodograms of the time series sections colored blue and green in Figure \ref{fig: fig1}. The black line denotes the inertial frequency.   The dotted lines on the left figure indicate the location of the eddy peak and the expected shift in the inertial frequency. The semi-parametric model fit for the frequencies used in model fitting is highlighted green on the left figure and blue on the right figure. The red dotted line indicates the model fit extended beyond the frequencies where it was fit. }
-        	\label{fig: fig4}
-\end{figure}
 
 
 \subsection{Fitting the Model}
@@ -276,27 +267,27 @@ S(\omega; \boldsymbol{\theta}) &= \frac{A^{2}}{(\omega - \omega_{0}) + c^{2}} + 
  Referred to as \textbf{\it{blurred Whittle likelihood}}, this new likelihood builds on the well-known Whittle likelihood, a frequency-based approximation  to the time-domain likelihood that reduces computational cost. 
   Whittle likelihood is designed to approximate the likelihood for a univariate Gaussian process, $\boldsymbol{Z}$,  in the time domain that has the likelihood
 \begin{align*}
-l_{t}(\boldsymbol{\theta}) = - \frac{1}{2} \log \left|\boldsymbol{\Sigma}_{Z}(\boldsymbol{\theta}) \right| - \frac{1}{2} Z^{T} \boldsymbol{\Sigma}_{\boldsymbol{Z}}^{-1}(\boldsymbol{\theta})\boldsymbol{Z},
+l_{t}(\boldsymbol{\theta}) = - \frac{1}{2} \log \left|\boldsymbol{\Sigma}_{z}(\boldsymbol{\theta}) \right| - \frac{1}{2} Z^{T} \boldsymbol{\Sigma}_{z}^{-1}(\boldsymbol{\theta})\boldsymbol{Z},
 \end{align*}
 where $\boldsymbol{\theta}$ are the model parameters for a particular choice of covariance structure, $\boldsymbol{\Sigma}_{z}$,  and $t$ denotes the time domain  \citep{Sykulski2013}. 
 
  It is known that  the periodogram satisfies
 \begin{equation}
-\hat{S}(\omega) \overset{d}{\rightarrow} S(\omega) \chi^{2}_{2}/2
+\hat{S}_{z}(\omega) \overset{d}{\rightarrow} S(\omega) \chi^{2}_{2}/2
 \end{equation}
 under certain regularity conditions \citep{Contreras2006}. 
 \citet{Whittle1953} combined this result with Fourier approximations to the true covariance structure and features of Toeplitz matrices to obtain the approximate likelihood
 \begin{align}
 \label{eq: bwl}
 l_{\omega}(\boldsymbol{\theta}) 
-&= -\sum_{\omega \in \Omega} \left[ \frac{\hat{S}(\omega)}{S(\omega;\boldsymbol{\theta})}  + \log  \{ S(\omega; \boldsymbol{\theta}) \}\right],
+&= -\sum_{\omega \in \Omega} \left[ \frac{\hat{S}_{z}(\omega)}{S(\omega;\boldsymbol{\theta})}  + \log  \{ S(\omega; \boldsymbol{\theta}) \}\right],
 \end{align}
 where the subscript $w$ indicates that this is a Whittle likelihood. 
 Leveraging the fast Fourier transform \citep{Cooley1965}, this  likelihood can be evaluated in $\mathcal{O}(N log(N))$, where $N$ is the length of the time series. 
 This is a notable increase in speed compared to the $\mathcal{O}(N^{3})$  required for time-domain likelihood  \citep{Sykulski2016}. 
   Nevertheless, this likelihood relies on the periodogram and so is affected by aliasing and leakage as discussed in Section \ref{sec: specAnalysis}. 
  
-To improve on these problems, \citet{Sykulski2013} propose replacing the theoretical spectrum, $S(\omega; \theta)$\, in Equation \ref{eq: bwl} with the expected value of the periodogram, 
+To improve on these problems, \citet{Sykulski2013} propose replacing the theoretical spectrum, $S(\omega; \boldsymbol{\theta})$\, in Equation \ref{eq: bwl} with the expected value of the periodogram, 
 \begin{equation}
 \overline{S}(\omega; \boldsymbol{\theta}) = \Delta \sum_{\tau = - (N - 1)}^{N-1} \left(1 - \frac{|\tau|}{N} \right)s(\tau ; \boldsymbol{\theta}) \exp ( - i \omega \tau \Delta).
 \end{equation} 
@@ -304,12 +295,12 @@ This form of the expected periodogram can be shown to be equivalent to convolvin
 \begin{equation}
 \mathcal{F}(\cdot) = \frac{\Delta}{2\pi N} \frac{\sin^{2}(N \omega \Delta/2)}{\sin^{2}(\omega \Delta /2)} 
 \end{equation} \citep{Sykulski2013}. 
-This improves the estimators obtained through maximizing the likelihood, because the expected value of the periodogram $\mathbb{E}[|J_{Z}(\omega)^{2}]$ is blurred in the same way as the observed periodogram \hdcomment{sentence wrong, look this up!}. Also, aliasing effects due to sampling at discrete intervals are taken into account. 
+This approach improves the estimators obtained through maximizing the likelihood, by bypassing the problems, namely aliasing and leakage,  associated with comparison against the true spectrum. 
 This leads to the final likelihood
 \begin{align}
-l_{b}(\boldsymbol{\theta}) = - \sum_{\omega \in \Omega} \left[\frac{\hat{S}(\omega)}{\overline{S}(\omega; \boldsymbol{\theta})} + \log \{ \overline{S} (\omega; \boldsymbol{\theta}) \}\right],
+l_{b}(\boldsymbol{\theta}) = - \sum_{\omega \in \Omega} \left[\frac{\hat{S}_{z}(\omega)}{\overline{S}(\omega; \boldsymbol{\theta})} + \log \{ \overline{S} (\omega; \boldsymbol{\theta}) \}\right],
 \end{align}
-where $b$ denotes blurred. This likelihood is maximized by standard off-the-shelf nonlinear optimization techniques. (Specifically, \citet{Sykulski2016} uses the `fminsearchbnd' function in Matlab \citep{DErrico2006} and we use the `fminsearch' function in the `pracma' R package \citep{Borchers2015}.) 
+where $b$ denotes that this is the blurred Whittle likelihood. This likelihood is maximized by standard off-the-shelf nonlinear optimization techniques. (Specifically, \citet{Sykulski2016} uses the `fminsearchbnd' function in Matlab \citep{DErrico2006} and we use the `fminsearch' function in the `pracma' R package \citep{Borchers2015}.) 
 
 Using asymptotic properties of the Whittle likelihood, we also have 
 \begin{equation}
@@ -327,6 +318,14 @@ In their analysis, they highlight using knowledge of the physical system and avo
 Specifically,  variability can be different for the eastward versus northward velocities  which creates spurious correlations between positive and negative correlations. 
 To avoid this, the authors only fit the model using data from either the positive or negative half of the spectrum depending on the sign of the inertial oscillation, which is known based on the latitude of the drifter.  
 Similarly, sampling effects due to interpolation make the accuracy of high frequencies suspect, so the authors only use frequencies up to a specified threshold in fitting the model. Figure \ref{fig: fig4} illustrates a semi-parametric model fit. 
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig4.pdf}
+        \caption{Periodograms of the time series sections colored blue and green in Figure \ref{fig: fig1}. The black line denotes the inertial frequency.   The dotted lines on the left figure indicate the location of the eddy peak and the expected shift in the inertial frequency. The semi-parametric model fit for the frequencies used in model fitting is highlighted green on the left figure and blue on the right figure. The red dotted line indicates the model fit extended beyond the frequencies where it was fit. }
+        	\label{fig: fig4}
+\end{figure}
+
 
 \subsubsection{Non-stationarity}
 To allow for non-stationarity in long time series, \citet{Sykulski2016} propose fitting the model independently at each observed time point using a rolling window around the time point of interest. 
@@ -357,7 +356,7 @@ R(t) = 2[l_{b} \{\hat{\theta}_{1}(t) \} - l_{b}\{\hat{\theta}_{0}(t) \} ],
 \end{equation}
 where $\hat{\theta}_{0}(t)$ is the fitted parameter vector for the simpler, or null model, and $\hat{\theta}_{1}(t)$ is the fitted parameter vector for the full model.
  The authors claim $R(t)$ then follows a chi-squared distribution with 1 degree of freedom. 
- However, as we will discuss further this may be overly simplistic, because of potential identifiability issues with the parameters and lack of independence between time points stemming from the use of a rolling window. 
+ However, as we will discuss further, this may be overly simplistic, because of potential identifiability issues with the parameters and lack of independence between time points stemming from the use of a rolling window. 
  
 
 \section{Results}
@@ -379,7 +378,7 @@ The resulting spectra consistently have peaks at zero and at the inertial freque
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=.8\textwidth]{ReplicatedFigures/fig5.png}
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig5.png}
         \caption{Left: The spectral density of one particle (blue) with the model fit overlaid for the portion of the spectra used to fit it (green) and extended to all frequencies (red). Right: The ensemble mean periodogram (blue) with the ensemble fit for the frequencies used to fit it (green) and extended to the entire spectrum (red). Individual trajectories' periodograms (light grey) and model fits (dark fit) are also displayed. }
         \label{fig: fig5}
 \end{figure}
@@ -406,7 +405,7 @@ Moving on to the entire time series, we use rolling windows of 1000 observations
    
    \begin{figure}[h!]
   \centering
-    \includegraphics[width=.9\textwidth]{ReplicatedFigures/fig7.png}
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig7.png}
         \caption{Top: Observed spectra of the drifter over time; Bottom: Modeled spectra over time. On both figures, the semi-transparent gray line indicates the average inertial frequency within the rolling window at the current time period.  Only frequencies used in the estimation are included.  }
         	\label{fig:timeVarying}
 \end{figure}
@@ -420,15 +419,15 @@ We note that the inertial frequency differs from the Coriolis Frequency from rou
 \citet{Sykulski2016} note that this deviation is appropriate and can be explained by a change in tidal energy over shallow periods of water. 
  \begin{figure}[h!]
   \centering
-    \includegraphics[width=.8\textwidth]{ReplicatedFigures/fig8.png}
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig8.png}
         \caption{Estimates of the six model parameters overtime with 95$\%$ confidence interval bands. The red line in the top figure is the inertial frequency.}
         	\label{fig: fig8}
 \end{figure}
 
  \begin{figure}[h!]
   \centering
-    \includegraphics[width=.85\textwidth]{ReplicatedFigures/fig9.pdf}
-        \caption{Time series of the likelihood ratio test statistic comparing the 5-parameter to 6-parameter models. The dotted red line indicates the value at which test statistics indicate a significant difference between the model. }
+    \includegraphics[width=.85\textwidth]{ReplicatedFigures/fig9Extend.pdf}
+        \caption{Time series of the likelihood ratio test statistic comparing the 5-parameter to 6-parameter models. The dotted red line indicates the value at which test statistics indicate a significant difference between the model. The first figure uses the window size specified in \citet{Sykulski2016} and the second figure doubles the window size.}
         	\label{fig: fig9}
 \end{figure}
 
@@ -447,8 +446,9 @@ This means that there is not independence between the time periods and there is 
 Both of these issues should be accounted for in designing a hypothesis test. 
 Further, the authors acknowledge elsewhere in the paper that the length of the rolling window is currently selected empirically and that further work on selecting windows would be beneficial. 
 This suggests that the p-value for any time point could be easily influenced by the length of the window used in fitting it.
-Thus, robustness checks of this method to the length of the window would be appropriate prior to using it.
-In other words, further thought should go in to designing a hypothesis that accurately reflects the problem set-up and modeling. 
+To explore this, in Figure \ref{fig: fig9} we replicate Figure 9  in the paper using both the window length specified in the paper and a doubled window length.
+The corresponding likelihood ratio tests do not reject the null hypothesis at all the same times. 
+This indicates that window size and its influence on hypothesis testing should be further investigated prior to applying this formal testing approach for the presence of a shift from the Coriolis frequency. 
 
 
 
@@ -456,7 +456,7 @@ In other words, further thought should go in to designing a hypothesis that accu
  \begin{figure}[h!]
   \centering
     \includegraphics[width=.6\textwidth]{ReplicatedFigures/fig10.pdf}
-        \caption{Table of the average correlation between parameters. Note that the parameters are ordered differently than in the paper, due to differences in the structure of the author's and my code. There are also minor differences in the correlation values, particularly for values close to zero. These differences can be attributed to slight differences in the numerical optimization used by R and Matlab in calculating the Hessian. }
+        \caption{Table of the average correlation between parameters. Note that there are  minor differences in the correlation values between these results and those in \citet{Sykulski2016} These differences can be attributed to slight differences in the numerical optimization used by R and Matlab in calculating the Hessian. }
         	\label{fig: fig10}
 \end{figure}
 
@@ -488,9 +488,9 @@ Another area that is insufficiently addressed in the paper is possible identifia
  If parameter estimates are highly correlated, physical changes in one parameter might actually be reflected by changes in other fitted parameters.
   This would subsequently invalidate conclusions about observed changes in specific parameters, since they could be masked by changes in other parameters. 
  For example, in Figure \ref{fig: fig10}, we see a high correlation (0.74) between the OU dampening and amplitude parameters, suggesting caution should be taken in interpreting their physical meaning. 
- For the primary variable of interest, inertial frequency, all correlations with other parameters are low, suggesting that the main conclusions of the paper are appropriate. 
+ For the primary variable of interest, inertial frequency, all correlations with other parameters are low, so the main conclusions of the paper are not affected by this issue. 
 Nevertheless, a fuller discussion of these limitations in interpretation would have been valuable.
-Overall, \citet{Sykulski2016} present a novel method for modeling ocean surface drifters.
+\par Overall, \citet{Sykulski2016} present a novel method for modeling ocean surface drifters.
  Their work is a substantial contribution to stochastic modeling, particularly, in terms, of explicitly incorporating known physics into statistical models. 
 
 
