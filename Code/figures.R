@@ -31,9 +31,8 @@ gStartTs <- 4201; gEndTs <- 4800 #index of 50 day period in blue is obtained fro
 
 #plot time series, coloring particular sections 
 #pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig1.pdf',
-#    height = 3, width = 4)
-#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(5,5,4,1.1)) #for pretty exporting
-par(mfrow = c(1, 1))
+#    height = 4, width = 5)
+par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(3.5,3,2,1.1), oma = c(1, 1, 1, 1)) #for pretty exporting
 plot(drift$lon[startTs:endTs], drift$lat[startTs:endTs], type = "l", 
      xlab = "Longitude", ylab = "Latitude", main = "Replication of Figure 1 (Right)")
 points(drift$lon[gStartTs:gEndTs], drift$lat[gStartTs:gEndTs], type = "l", col = "green")
@@ -90,7 +89,7 @@ gCF <- mean(-4*pi*(drift$f[gStartTs:gEndTs]))
 bFit <- fitModel(bZ, bCF, delta = DELTA, fracNeg = 0.4, fracPos = 0, quantSet = .5)
 #pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig4.pdf',
 #    height = 4, width = 8.5)
-#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(4,5,4,1.1)) #for pretty exporting
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(5,5,4,1.1)) #for pretty exporting
 par(mfrow = c(1,2))
 plot(DELTA*blue$omega, blue$sZ, type = "l", col = "blue", xlab = expression(paste(omega, Delta)),
      ylab = "dB", xlim = c(-pi, pi + 1), ylim = c(-20, 60))
@@ -144,9 +143,9 @@ N <- 1000
 fbmSamp <- simFBM(B = 10, alpha  = 0.9, H = 0.1, N = N)
 
 #plot figure
-pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig3.pdf',
-    height = 6, width = 6)
-par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(2,2,3,1.1), mai = rep(.25, 4), oma = rep(1, 4)) #for pretty exporting
+#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig3.pdf',
+#    height = 6, width = 6)
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(4,4,3,1.1), mai = rep(.55, 4), oma = rep(1, 4)) #for pretty exporting
 layout(matrix(c(1, 2, 3, 3), 2, 2, byrow = TRUE))
 #u coordinate vs. time
 plot(fbmSamp[,"u"], col = "blue", xlim = c(0, 1000), ylim = c(-200, 200),
@@ -169,7 +168,7 @@ plot(DELTA*fbm$omega, fbm$sZ, col = "blue", ylim = c(-20, 80), xlim = c(-pi, pi)
      type = "l", xlab = expression(paste(omega, Delta)), ylab = "dB")
 legend("topright", legend = c("FBM", "Matern"), fill = c("blue", "red"), cex = 1)
 points(DELTA*mat$omega, mat$sZ, col = "red", type = "l")
-dev.off()
+#dev.off()
 
 #####################################
 #Figure 5: SPEM Computer Experiment
@@ -287,9 +286,9 @@ nWin <- 1000 #rolling window length
 xVal <- (500:(N - 500))/MPD #Convert x-axis to days not number of observations
 
 ###Figure 6###
-#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig6.pdf',
-#    height = 3, width = 8.5)
-#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(4,5,4,1.1)) #for pretty exporting
+pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig6.pdf',
+    height = 4, width = 8.5)
+par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(4,5,4,1.1)) #for pretty exporting
 par(mfrow = c(1, 2))
 #plot langrangian time series
 plot(driftUlys$lon, driftUlys$lat, type = "l", col = "blue", xlim = c(-120, -80),
@@ -322,9 +321,9 @@ abline(v = CF, lwd = 3) #inertial frequency
 legend("topright", legend = c("data", "fit", "extended fit"),
        lty = c("solid", "solid", "dotted"), col = c("blue", "green", "red"),
        cex = .7, bg = "white", horiz = FALSE)
-#dev.off()
+dev.off()
 
-###Fit 6-parameter model, used throughout sectiont###
+###Fit 6-parameter model, used throughout section###
 #find region to fit model in (semi-parametric, choice based on understanding of the physics)
 fracPos <- 1.75*max(4*pi*driftUlys$f)/pi 
 
@@ -401,16 +400,16 @@ load('/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 #save(hessArray, file = '/users/hdirector/Documents/prelim/prelim/Code/hess.rda')
 
 #plot observed periodogram
-#png('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig7.png',
-#  width = 8.5, height = 5, units = 'in', res = 300)
-#par(mgp=c(.95, 0.45,0), mar=c(1, 3,2, 1), mai = c(.4, .85, .32, .25), oma = rep(.5, 4))
+png('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig7.png',
+  width = 8.5, height = 5, units = 'in', res = 300)
+par(mgp=c(.95, 0.45,0), mar=c(1, 3,2, 1), mai = c(.4, .85, .32, .25), oma = rep(.5, 4))
 par(mfrow = c(2, 1))
 
 library("fields")
 image.plot(xVal, 2*toStartPer$omega[firstIndex:lastIndex],
            sZMat, useRaster = TRUE, zlim = c(20, 60),
            ylab = expression(paste("Freq. in radians (", omega, Delta %in% Omega, ")")),
-           xlab = "Day", cex.lab = 1, cex.axis = .1)
+           xlab = "Day", cex.lab = 1, cex.axis = .9)
 points(xVal, CFVec, col = "black", lwd = 0.005)
 mtext("Replication of Figure 7", outer = T, line = -1.5)
 
@@ -428,19 +427,19 @@ for (i in 1:(N - 999)) {
 image.plot(xVal, 2*toStartPer$omega[firstIndex:lastIndex],
            sZMatObs, useRaster = TRUE, zlim = c(20, 60),
            ylab = expression(paste("Freq. in radians (", omega, Delta %in% Omega, ")")),
-           xlab = "Day", cex.lab = 1, cex.axis = 1)
+           xlab = "Day", cex.lab = 1, cex.axis = .9)
 points(xVal, CFVec, col = "black", lwd = 0.005)
-#dev.off()
+dev.off()
 
 ###Figure 8###
 #plot Figures
 #png('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig8.png',
 #    width = 8.5, height = 8, units = 'in', res = 300)
-#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(1.4,5,4,1.1)) #for pretty exporting
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(1.4,1.5,2,1.1), mai = c(.5, .5, .5, .5)) #for pretty exporting
 par(mfrow = c(4, 1))
 
 #plot w0 over time with confidence interval and coriolis frequency over time
-plot(xVal, par6Val[,"w0"], ylim = c(.43, .67), type = "l", cex.axis = 2,
+plot(xVal, par6Val[,"w0"], ylim = c(.43, .7), type = "l", cex.axis = 2,
      xlab = "Day", ylab = "Inertial Freq.", col = "blue", cex.lab = 2) #initialize plot
 polygon(c(rev(xVal), xVal), c(rev(par6LB[, "w0"]), par6UB[, "w0"]), col = 'lightblue', border = NA)
 points(xVal, par6Val[,"w0"],  type = "l", col = "blue") #plot again, since line gets covered by polygon
@@ -451,7 +450,7 @@ legend("top", legend = c(expression(hat(omega)[0]), "95% CI" , "Coriolis freq. "
        fill = c("blue", "lightblue", "red"), horiz = TRUE, cex = 1.4)
 
 #plot inertial frequencies over time with confidence interval 
-plot(xVal, par6Val[, "A"], ylim = c(0, 32), type = "l", cex.axis = 2,
+plot(xVal, par6Val[, "A"], ylim = c(0, 34), type = "l", cex.axis = 2,
      xlab = "Day", ylab  = "Amplitudes", col = "blue", cex.lab = 2)
 polygon(c(rev(xVal), xVal), c(rev(par6LB[, "A"]), par6UB[, "A"]), col = 'lightblue', border = NA)
 points(xVal, par6Val[, "A"], type = "l", col = "blue")
@@ -570,10 +569,11 @@ newCorr[6, 6] <- medCorr[5, 5]
 
 #plot correlation
 library(corrplot)
-pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig10.pdf')
+pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig10.pdf',
+    height = 4, width = 4)
 corrplot(newCorr, method = "color", p.mat = newCorr, insig = "p-value",
          sig.level = -1, type = "lower")
-mtext("Replication of Figure 10", outer = T, line = -3, cex = 2)
+mtext("Replication of Figure 10", outer = T, line = -2, cex = 1)
 dev.off()
 
 #####################################
@@ -600,7 +600,7 @@ lastIndex <- toStartFit$lastIndex
 
 #Storage vectors for parameters, negative log likelihood, confidence interval bands, and hessians
 par6Val_2000 <- matrix(nrow = N - 1999, ncol = 6)
-colnames(par6Val_500) <- c("A", "B", "w0", "C", "h", "alpha")
+colnames(par6Val_2000) <- c("A", "B", "w0", "C", "h", "alpha")
 llVal6_2000 <- rep(NA, N - 1999)
 llVal6_2000[1] <- toStartFit$llVal
 
@@ -609,21 +609,21 @@ par6Val_2000[1, ] <- c(toStartFit$A, toStartFit$B, toStartFit$w0,
                   toStartFit$C, toStartFit$h, toStartFit$alpha)
 
 #Loop through all windows and calculate parameter estimates, confidence intervals, and hessian
-for (i in 1001:(N - 1000)) {
-  currCv <- driftUlys$cv[(i - 999):(i + 1000)] 
-  CFCurr <- CFVec[i - 999]
+#for (i in 1001:(N - 1000)) {
+#  currCv <- driftUlys$cv[(i - 999):(i + 1000)] 
+#  CFCurr <- CFVec[i - 999]
 #fit parameters, initialize estimates at value used in last run
-  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
-                      quantSet = .8, needInits = FALSE, parInit = par6Val_2000[i - 999 - 1, ],
-                      getHess = FALSE)
-  par6Val_2000[i - 999, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
-                          tempFit$C, tempFit$h, tempFit$alpha)
-  llVal6_2000[i - 999] <-  tempFit$llVal
-  print(i)
-}
+#  tempFit <- fitModel(currCv, CFCurr, DELTA, fracNeg = 0, fracPos = fracPos,
+#                      quantSet = .8, needInits = FALSE, parInit = par6Val_2000[i - 999 - 1, ],
+#                      getHess = FALSE)
+#  par6Val_2000[i - 999, ] <- c(tempFit$A, tempFit$B, tempFit$w0,
+#                          tempFit$C, tempFit$h, tempFit$alpha)
+#  llVal6_2000[i - 999] <-  tempFit$llVal
+#  print(i)
+#}
 
 #store  results
-save(llVal6_2000, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6_2000.rda')
+#save(llVal6_2000, file = '/users/hdirector/Documents/prelim/prelim/Code/llVal6_2000.rda')
 
 ###Simplified model using longer window
 #Periodogram and paremeter fit for first rolling window (used for set up)
@@ -665,15 +665,14 @@ load('/users/hdirector/Documents/prelim/prelim/Code/llVal6.rda')
 load('/users/hdirector/Documents/prelim/prelim/Code/llVal5.rda')
 load('/users/hdirector/Documents/prelim/prelim/Code/llVal5_2000.rda')
 load('/users/hdirector/Documents/prelim/prelim/Code/llVal6_2000.rda')
-pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig9Extend.pdf',
-    height = 3, width = 4)
-par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(1.6,3.5,1,1)) #for pretty exporting
-par(mfrow = c(2, 1))
+#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig9Extend.pdf',
+    height = 4, width = 6)
+#par(mar=c(5,5,.75,.1), oma = c(2, 2, .1, .1), mfrow = c(2, 1)) #for pretty exporting
 LRT <- 2*(-llVal6 - -llVal5)
 plot(xVal, LRT, type = "l", col = "blue", xlab = "Day", ylim = c(0, 40),
      ylab = "Likelihood Ratio \n Test Statistic", 
-     main = "Replication of Figure 9, Window Length: 1000", cex.main = .6,
-     cex.lab = .6, cex.axis = .6)
+     main = "Replication of Figure 9, Window Length: 1000", cex.main = 1,
+     cex.lab = .8, cex.axis = .8)
 abline(h = qchisq(.95, 1), col = "red", lty = 2)
 legend("topright", legend = c("LRT Test Stat.", "Significance Level"), fill = c("blue", "red"), cex = .6)
 
@@ -682,9 +681,9 @@ LRT2 <- 2*(-llVal6_2000 - -llVal5_2000)
 LRT2 <- c(rep(NA, 500), LRT2, rep(NA, 500)) #don't plot in window that we can't observe
 plot(xVal, LRT2, type = "l", col = "blue", xlab = "Day", ylim = c(0, 40),
      ylab = "Likelihood Ratio \n Test Statistic", 
-     main = "Analogous Plot to Figure 9, Window Length: 2000", cex.main = .6, 
-     cex.lab = .6, cex.axis = .6)
+     main = "Analogous Plot to Figure 9, Window Length: 2000", cex.main = 1, 
+     cex.lab = .8, cex.axis = .8)
 abline(h = qchisq(.95, 1), col = "red", lty = 2)
 legend("topright", legend = c("LRT Test Stat.", "Significance Level"), fill = c("blue", "red"), cex = .6)
 
-dev.off()
+#dev.off()

@@ -50,9 +50,8 @@ Oceanographers use these time series to increase understanding of  ocean circula
 Published in January 2016 in the \textbf{\it{Journal of the Royal Statistical Society Series C}}, this paper makes a notable contribution to the statistical literature by illustrating how to directly embed knowledge of a physical system into a stochastic model. 
  \begin{figure}[h!]
   \centering
-    \includegraphics[width=.6\textwidth]{ReplicatedFigures/fig1.pdf}
-        \caption{A 250-day sample drifter trajectory with two 50-day periods highlighted in green and blue. The time period highlighted in green is not affected by eddies while the time period highlighted in blue is.
-        \vmcomment{You could crop away the white space in the figure.}}
+    \includegraphics[width=.55\textwidth]{ReplicatedFigures/fig1.pdf}
+        \caption{A 250-day sample drifter trajectory with two 50-day periods highlighted in green and blue. The time period highlighted in green is not affected by eddies while the time period highlighted in blue is.}
         	\label{fig: fig1}
 \end{figure}
  
@@ -73,7 +72,7 @@ In achieving this result, several statistical advances are made.
 The authors introduce an additive spectral domain model that has components corresponding to both the turbulent background and the inertial oscillations. 
 The Mat\'{e}rn covariance commonly used in spatial statistics \citep{Gneiting2012} is applied for the first time to model the turbulent background. 
 Because of its flexibility, this covariance structure is shown to have more desirable features than previously-used stochastic models. 
-Inertial oscillations are modeled with a complex-valued Ornstein-Uhlenbeck (OU) \vmadd{process} \citep{Arato1962, Jeffreys1968}, which provides a stochastic equivalent to an accepted set of coupled differential equations describing inertial oscillations. 
+Inertial oscillations are modeled with a complex-valued Ornstein-Uhlenbeck (OU) process \citep{Arato1962, Jeffreys1968}, which provides a stochastic equivalent to an accepted set of coupled differential equations describing inertial oscillations. 
 Further statistical innovation is employed in fitting the model with a variation on standard Whittle likelihood that compensates for both bias and aliasing and in allowing for non-stationarity through time-varying parameter estimates.
 \par
 The remainder of this report proceeds as follows.
@@ -97,7 +96,7 @@ We conclude the paper with a discussion of the value and limitations of the appr
 	Time series are often modeled as the sums of periodic functions, which, using Euler's formula, can be represented compactly as sums of appropriately-weighted complex exponentials. 
 	Moreover, data in the time domain can easily be related to data in the frequency domain and vice versa using the Fourier or inverse Fourier transformations,
 	\begin{align}
-Z_{m} = \frac{1}{2T} \int_{-T}^{T}z(t)e^{-i\omega_{m}t} dt\vmadd{,} && z(t) = \sum_{m=-\infty}^{\infty}Z_{m}e^{i \omega_{m} t},
+Z_{m} = \frac{1}{2T} \int_{-T}^{T}z(t)e^{-i\omega_{m}t} dt,  && z(t) = \sum_{m=-\infty}^{\infty}Z_{m}e^{i \omega_{m} t},
 \end{align}
 where $T$ indicates the period \citep{Percival1993}. 
 To understand the distribution of frequencies, the \textbf{\it{power spectral density}},
@@ -107,7 +106,7 @@ S_{z}(\omega) = \underset{T \rightarrow \infty}{\lim} \mathbb{E} \left(\frac{1}{
 is often employed. 
 This quantity represents the variance (or power) associated with each frequency \citep{Percival1993}. 
 Power spectral densities are useful for statistical modeling and can be related to the autocovariance sequence of a time series using  Fourier transformation.  
-We define the autocovariance  for $z(t)$ as $s(\tau) = \mathbb{E}[z(t) z^{*}(t - \tau)] $\vmadd{,} where $z^{*}(t)$ represents the complex conjugate of z(t). Letting $\tau$ be the time lag, we have
+We define the autocovariance  for $z(t)$ as $s(\tau) = \mathbb{E}[z(t) z^{*}(t - \tau)] $, where $z^{*}(t)$ represents the complex conjugate of z(t). Letting $\tau$ be the time lag, we have
 \begin{align}
 \label{eq: fourierPair}
 S_{z}(\omega) = \int_{-\infty}^{\infty}s_{z}(\tau) e^{-i\omega t}d \tau \Longleftrightarrow s_{z}(\tau) = \frac{1}{2\pi} \int_{-\infty}^{\infty}S_{z}(\omega) e^{i \omega t} d\omega 
@@ -132,29 +131,29 @@ Specifically, \textbf{\it{Aliasing}} refers to the fact that frequencies above t
  
 \subsubsection{Inertial oscillations}
 We begin by discussing the model for the inertial oscillations. 
-In a deterministic setting, inertial oscillations are often modeled with the following set of coupled differential equations\vmadd{:}
+In a deterministic setting, inertial oscillations are often modeled with the following set of coupled differential equations:
 \begin{align}
 \label{eq: deterOsc}
 \frac{\partial u }{\partial t}  + f_{0} \nu &= F - cu,\\ \nonumber
 \frac{\partial v}{\partial t} - f_{0}u &= G - cv,
 \end{align}
 where $u$ and $v$ again represent eastward and northward velocities, $f_{0}$ represents the inertial frequency in radians per unit time, and $F$ and $G$ are forces related to the wind  \citep{Pollard1970}. 
-Suppressing the dependence on $t$ and using the complex representation of the velocity,  we show that these relationships can be equivalently expressed as follows\vmadd{:}
+Suppressing the dependence on $t$ and using the complex representation of the velocity,  we show that these relationships can be equivalently expressed as follows:
 \begin{align}
 \label{eq:diffEqDeriv}
 \nonumber
-\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}\vmadd{,} \\ \nonumber
+\frac{dz}{dt} &= \frac{\partial u}{dt} + i\frac{\partial v(t)}{dt}, \\ \nonumber
 dz &= (F - c u- f_{0}v)dt + i(G - cv + f_{0}u)dt\\ \nonumber
 &= f_{0}(-v + iu)dt - c(u + iv)dt + (F + iG)dt\\ \nonumber
 &= if_{0}(u + iv)dt - c(u + iv)dt + (F + iG)dt\\ 
 &= (if_{0} - c)z dt + (F + iG)dt. 
 \end{align}
-\citet{Sykulski2016} further replace the wind forcing term, $(F + iG)dt$\vmadd{,}  with complex-valued Brownian increments \citep{Mandelbrot1968} to obtain a stochastic analogue for Equation \ref{eq:diffEqDeriv},
+\citet{Sykulski2016} further replace the wind forcing term, $(F + iG)dt$,  with complex-valued Brownian increments \citep{Mandelbrot1968} to obtain a stochastic analogue for Equation \ref{eq:diffEqDeriv},
  \begin{equation}
 \label{eq: ouEq}
 dz(t) = (i f_{0} -c) z(t) dt + A d Q(t). 
 \end{equation}  
-Equation \eqref{eq: ouEq}  is known as the complex-valued \vmdel{Ornstein-Uhlenbeck (}OU\vmdel{)} stochastic differential equation. 
+Equation \eqref{eq: ouEq}  is known as the complex-valued OU stochastic differential equation. 
 In general,  OU processes are considered continuous-time equivalents to the AR(1) process. Specifically,  the univariate OU process is the only mean-zero, stationary, Gaussian, continuous Markov process, and, similarly the multivariate OU process is the only mean-zero $K$-variate process that is stationary, continuous, Gaussian, and Markov \citep{Schach1971}.
  The complex-valued OU process is the complex representation of a bivariate OU process.  
  In the formulation of Equation \eqref{eq: ouEq}, $c > 0$ is a dampening parameter that forces the process to always eventually return to its mean position, $z = 0$.  
@@ -168,7 +167,7 @@ In general,  OU processes are considered continuous-time equivalents to the AR(1
 \end{enumerate}
 \citep{Hida1980}. 
 
-To identify and estimate shifts in the angular frequency, presumably caused by eddies, \citet{Sykulski2016} propose replacing the known inertial requency, $f_{0}$,  in Equation~\eqref{eq: ouEq} with  a free parameter, $\omega_{0}$, to be estimated \vmdel{by} \vmadd{from} the data. 
+To identify and estimate shifts in the angular frequency, presumably caused by eddies, \citet{Sykulski2016} propose replacing the known inertial requency, $f_{0}$,  in Equation~\eqref{eq: ouEq} with  a free parameter, $\omega_{0}$, to be estimated  from the data. 
 If the estimated angular frequency differs from the inertial frequency, the angular frequency of the eddy can be calculated as $\omega_{eddy} = f_{0} - \omega_{0}$, since $\omega_{0}$ is a sum of the inertial and eddy frequencies.
 
 For time series modeling, we are interested in the autocovariance of this process at different time lags. To derive the autocovariance as given in Equation 4 of \citet{Sykulski2016}, we follow \citet{Arato1999} and consider the bivariate rather than complex-valued OU process.
@@ -186,7 +185,7 @@ For a bivariate OU process, the covariance matrix at time lag $\tau > 0$ is
 \begin{align}
 \label{eq: bivOU}
 \boldsymbol{C}(\tau) = \left( \begin{array}{cc} \mathbb{E}[u(t + \tau)u(t)] & \mathbb{E}[u(t + \tau)v(t)] \\ 
-\mathbb{E}[v(t + \tau)u(t)] & \mathbb{E}[v(t + \tau) v(t)] \end{array} \right) = \exp \left\{ \left( \begin{array}{cc} -c & -\omega_{0} \\ \omega_{0} & -c \end{array} \right)\tau \right\}\boldsymbol{C}(0)\vmadd{,}
+\mathbb{E}[v(t + \tau)u(t)] & \mathbb{E}[v(t + \tau) v(t)] \end{array} \right) = \exp \left\{ \left( \begin{array}{cc} -c & -\omega_{0} \\ \omega_{0} & -c \end{array} \right)\tau \right\}\boldsymbol{C}(0),
 \end{align}
 where $\boldsymbol{C}(0)$ gives the covariance matrix at the initial time, $t$ \citep{Schach1971}.  \citet{Sykulski2016} specify that at the initial time, $z(t) \sim$ N(0, $A^{2}/2c$). We also note $u(t)$ and $v(t)$ are uncorrelated at the initial time, giving $\mathbb{E}[u(t)v(t)] = \mathbb{E}[v(t) u(t)] = 0$. Thus, Equation \ref{eq: expec} simplifies to
 \begin{equation}
@@ -197,13 +196,13 @@ Since $u(t)$ and $v(t)$ are assumed to be the same type of process, Equation \eq
 \begin{align}
 \label{eq: covDeriv}
  \boldsymbol{C}(\tau) =  \exp \left\{ \left( \begin{array}{cc} -c & -\omega_{0} \\ \omega_{0} & -c \end{array} \right)\tau \right\} \left( \begin{array}{cc} A^{2}/4c & 0 \\ 0 & A^{2}/4c \end{array} \right)  &= 
-\frac{A^{2}}{4c} \exp (-c \tau) \left( \begin{array}{cc} \cos \tau \omega_{0} & - \sin \tau \omega_{0} \\ \sin \tau \omega_{0} & \cos \tau \omega_{0}  \end{array} \right)\vmadd{,}
+\frac{A^{2}}{4c} \exp (-c \tau) \left( \begin{array}{cc} \cos \tau \omega_{0} & - \sin \tau \omega_{0} \\ \sin \tau \omega_{0} & \cos \tau \omega_{0}  \end{array} \right),
 \end{align}
-where the second equality can be \vmdel{seen} \vmadd{obtained} by expanding the infinite series representations for $\exp(-c \tau)$, $\sin(\tau \omega_{0})$, and $\cos( \tau \omega_{0})$. 
-Finally, using the values obtained in Equation \eqref{eq: covDeriv} in Equation \eqref{eq: expec}, we obtain the autocovariance  as defined \vmdel{in} \vmadd{by} \citet{Sykulski2016}\vmadd{:}
+where the second equality can be obtained by expanding the infinite series representations for $\exp(-c \tau)$, $\sin(\tau \omega_{0})$, and $\cos( \tau \omega_{0})$. 
+Finally, using the values obtained in Equation \eqref{eq: covDeriv} in Equation \eqref{eq: expec}, we obtain the autocovariance  as defined by \citet{Sykulski2016}:
 \begin{align}
 \label{eq: ouAC} \nonumber
-s^{(o)}(\tau) & = \frac{A^{2}}{4c} \exp(-c\tau) 2(\cos \tau \omega_{0} + \sin \tau \omega_{0})\vmadd{,} \\
+s^{(o)}(\tau) & = \frac{A^{2}}{4c} \exp(-c\tau) 2(\cos \tau \omega_{0} + \sin \tau \omega_{0}), \\
 &= \frac{A^{2}}{2c} \exp(i \omega_{0}\tau) \exp(-c|\tau|).
 \end{align}
  The $(o)$ superscript denotes that this equation is for the OU component of the full model. Using Equation \eqref{eq: fourierPair}, the corresponding power spectral density can be found to be\begin{align}
@@ -244,8 +243,8 @@ They also highlight that that Mat\'{e}rn model is more appropriate than the othe
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=.9\textwidth]{ReplicatedFigures/fig3.pdf}
-        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component of the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale. \vmcomment{Label all axes.}}
+    \includegraphics[width=.85\textwidth]{ReplicatedFigures/fig3.pdf}
+        \caption{Simulated velocities obtained using FBM (blue) and Mat\'{e}rn (red)  processes. Top Left: The eastward component of the velocities. Top Right: The eastward and northward components of the velocities. Bottom: Periodograms of both processes on the decibel scale. }
         	\label{fig: fmbMat}
 \end{figure}
 
@@ -313,16 +312,16 @@ Thus, uncertainty estimates of the parameters can easily be obtained using numer
 
 \subsubsection{Semi-parametric fitting}
 \label{sec: semi}
-The authors note that the fitting of Equation \eqref{eq: fullSpec} can be adapted to reflect background knowledge about the drifters \vmcomment{I don't like the phrase "fitting of Equation (17).}. 
-They refer to making these adjustments as applying a semi-parametric approach. 
+The authors note that how the overall model is fit can be adjusted to reflect background knowledge.
+They refer to doing this as applying a semi-parametric approach.  
 In their analysis, they highlight using knowledge of the physical system and avoiding artifacts from interpolation. 
-Specifically,  variability can be different for the eastward versus northward velocities  which creates spurious correlations between positive and negative correlations \vmcomment{correlations between correlations? just checking.}. 
+Specifically,  variability can be different for the eastward versus northward velocities  which creates spurious correlations between positive and negative frequencies. 
 To avoid this, the authors only fit the model using data from either the positive or negative half of the spectrum depending on the sign of the inertial oscillation, which is known based on the latitude of the drifter.  
 Similarly, sampling effects due to interpolation make the accuracy of high frequencies suspect, so the authors only use frequencies up to a specified threshold in fitting the model. Figure \ref{fig: fig4} illustrates a semi-parametric model fit. 
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig4.pdf}
+    \includegraphics[width=.95\textwidth]{ReplicatedFigures/fig4.pdf}
         \caption{Periodograms of the time series sections colored blue and green in Figure \ref{fig: fig1}. The black line denotes the inertial frequency.   The dotted lines on the left figure indicate the location of the eddy peak and the expected shift in the inertial frequency. The semi-parametric model fit for the frequencies used in model fitting is highlighted green on the left figure and blue on the right figure. The red dotted line indicates the model fit extended beyond the frequencies where it was fit. }
         	\label{fig: fig4}
 \end{figure}
@@ -371,7 +370,7 @@ The simulated data is useful as a verification tool, since  it contains no eddie
 
 \par For all two hundred trajectories, the full six-parameter model, given in Equation \eqref{eq: fullSpec}, is fit to each trajectory. 
 The model is fit using both sides of the spectrum with frequencies up to 1.5 times the inertial frequency. 
-The parameters are assumed constant, since this portion of the time series \vmdel{does} is fairly short. 
+The parameters are assumed constant, since this portion of the time series  is fairly short. 
 In Figure \ref{fig: fig5}, we display the fit of the aggregate spectral model to a single trajectory from the simulation and to an ensemble of trajectories. 
 We also display the individual periodograms and model fits. 
 The resulting spectra consistently have peaks at zero and at the inertial frequency, which indicates that the model captures the turbulent background and the inertial oscillations accurately. 
@@ -379,7 +378,7 @@ The resulting spectra consistently have peaks at zero and at the inertial freque
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig5.png}
+    \includegraphics[width=.95\textwidth]{ReplicatedFigures/fig5.png}
         \caption{Left: The spectral density of one particle (blue) with the model fit overlaid for the portion of the spectra used to fit it (green) and extended to all frequencies (red). Right: The ensemble mean periodogram (blue) with the ensemble fit for the frequencies used to fit it (green) and extended to the entire spectrum (red). Individual trajectories' periodograms (light grey) and model fits (dark fit) are also displayed. }
         \label{fig: fig5}
 \end{figure}
@@ -393,7 +392,7 @@ Its periodogram, displayed in Figure \ref{fig: fig6}, shows substantial asymmetr
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig6.pdf}
+    \includegraphics[width=.95\textwidth]{ReplicatedFigures/fig6.pdf}
         \caption{Left: The trajectory of the drifter in the south Pacific ocean. Right: The periodogram and model fit for the section of the trajectory highlighted in red. The green portion of the model fit corresponds to the frequencies used in fitting and the red dotted line is an extension of the fit to other frequencies. }
         \label{fig: fig6}
 \end{figure}
@@ -406,7 +405,7 @@ Moving on to the entire time series, we use rolling windows of 1000 observations
    
    \begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig7.png}
+    \includegraphics[width=.95\textwidth]{ReplicatedFigures/fig7.png}
         \caption{Top: Observed spectra of the drifter over time; Bottom: Modeled spectra over time. On both figures, the semi-transparent gray line indicates the average inertial frequency within the rolling window at the current time period.  Only frequencies used in the estimation are included.  }
         	\label{fig:timeVarying}
 \end{figure}
@@ -420,15 +419,15 @@ We note that the inertial frequency differs from the Coriolis Frequency from rou
 \citet{Sykulski2016} note that this deviation is appropriate and can be explained by a change in tidal energy over shallow periods of water. 
  \begin{figure}[h!]
   \centering
-    \includegraphics[width=\textwidth]{ReplicatedFigures/fig8.png}
-        \caption{Estimates of the six model parameters overtime with 95$\%$ confidence interval bands. The red line in the top figure is the inertial frequency. \vmcomment{Add x-axis label to the bottom plot.}}
+    \includegraphics[width=.8\textwidth]{ReplicatedFigures/fig8.png}
+        \caption{Estimates of the six model parameters overtime with 95$\%$ confidence interval bands. The red line in the top figure is the inertial frequency. }
         	\label{fig: fig8}
 \end{figure}
 
  \begin{figure}[h!]
   \centering
-    \includegraphics[width=.85\textwidth]{ReplicatedFigures/fig9Extend.pdf}
-        \caption{Time series of the likelihood ratio test statistic comparing the 5-parameter to 6-parameter models. The dotted red line indicates the value at which test statistics indicate a significant difference between the model. The first figure uses the window size specified in \citet{Sykulski2016} and the second figure doubles the window size. \vmcomment{Add x-axis label to the bottom plot.}}
+    \includegraphics[width=\textwidth]{ReplicatedFigures/fig9Extend.pdf}
+        \caption{Time series of the likelihood ratio test statistic comparing the 5-parameter to 6-parameter models. The dotted red line indicates the value at which test statistics indicate a significant difference between the model. The first figure uses the window size specified in \citet{Sykulski2016} and the second figure doubles the window size.}
         	\label{fig: fig9}
 \end{figure}
 
@@ -457,7 +456,7 @@ This indicates that window size and its influence on hypothesis testing should b
  \begin{figure}[h!]
   \centering
     \includegraphics[width=.6\textwidth]{ReplicatedFigures/fig10.pdf}
-        \caption{Table of the average correlation between parameters. Note that there are  minor differences in the correlation values between these results and those in \citet{Sykulski2016} These differences can be attributed to slight differences in the numerical optimization used by R and Matlab in calculating the Hessian. }
+        \caption{Table of the average correlation between parameters. Note that there are  minor differences in the correlation values between these results and those in \citet{Sykulski2016} These differences can be attributed to differences in the numerical optimization used by R and Matlab in calculating the Hessian. }
         	\label{fig: fig10}
 \end{figure}
 
@@ -498,8 +497,6 @@ Nevertheless, a fuller discussion of these limitations in interpretation would h
 
 
 \clearpage
-
-\vmcomment{Remove URLs from References}
 
 \bibliography{prelim}
 

@@ -159,7 +159,6 @@ llSimp <- function(theta, delta, curr, firstIndex, lastIndex, medIndex,
     tempIndex <- tempIndex[-which(tempIndex == medIndex)]
     llVal <- sum(curr$sZ[tempIndex]/sBar[tempIndex]) + sum(log(sBar[tempIndex]))
   }
-  print(llVal)
   return(llVal)
 }
 
