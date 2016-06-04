@@ -286,9 +286,9 @@ nWin <- 1000 #rolling window length
 xVal <- (500:(N - 500))/MPD #Convert x-axis to days not number of observations
 
 ###Figure 6###
-pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig6.pdf',
-    height = 4, width = 8.5)
-par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(4,5,4,1.1)) #for pretty exporting
+#pdf('/users/hdirector/Documents/prelim/prelim/Paper/ReplicatedFigures/fig6.pdf',
+#    height = 4, width = 8.5)
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(4,5,4,1.1)) #for pretty exporting
 par(mfrow = c(1, 2))
 #plot langrangian time series
 plot(driftUlys$lon, driftUlys$lat, type = "l", col = "blue", xlim = c(-120, -80),
@@ -318,8 +318,8 @@ points(DELTA*samp$omega, 10*log10(sBar), col = "red", lty = 3, type = "l", lwd =
 points(DELTA*samp$omega[sampFit$firstIndex:sampFit$lastIndex], 10*log10(sBar)[sampFit$firstIndex:sampFit$lastIndex], 
        col = "green", type = "l", lwd = 3)
 abline(v = CF, lwd = 3) #inertial frequency
-legend("topright", legend = c("data", "fit", "extended fit"),
-       lty = c("solid", "solid", "dotted"), col = c("blue", "green", "red"),
+legend("topright", legend = c("data", "fit", "extended fit", "inertial freq."),
+       lty = c("solid", "solid", "dotted", "solid"), col = c("blue", "green", "red", "black"),
        cex = .7, bg = "white", horiz = FALSE)
 dev.off()
 
